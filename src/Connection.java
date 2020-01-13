@@ -21,6 +21,10 @@ public class Connection {
     this(gene.getIn(), gene.getOut(), weight);
   }
 
+  public float getWeight() {
+    return weight;
+  }
+
   public void setWeight(float weight) {
     this.weight = weight;
   }
@@ -39,5 +43,9 @@ public class Connection {
 
   public int getOut() {
     return gene.getOut();
+  }
+
+  public ConnectionGene getGene() {
+    return gene;
   }
 }

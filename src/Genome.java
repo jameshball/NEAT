@@ -25,8 +25,77 @@ class Genome {
     initialiseGenome(innovations);
   }
 
-  public static float compatibilityDistance(Genome genome1, Genome genome2) {
-    return 0;
+  public static float compatibilityDistance(Genome genome1, Genome genome2, HashMap<ConnectionGene, Integer> innovations) {
+    int matchingConnections = 0;
+    int totalWeightDiff = 0;
+
+    for (Connection connection1 : genome1.connections) {
+      for (Connection connection2 : genome2.connections) {
+        int innovationNumber1 = innovations.get(connection1.getGene());
+        int innovationNumber2 = innovations.get(connection2.getGene());
+
+        if (innovationNumber1 == innovationNumber2) {
+          matchingConnections++;
+
+          totalWeightDiff += Math.abs(connection1.getWeight() - connection2.getWeight());
+        }
+      }
+    }
+
+    int excessConnections = excessConnections(genome1, genome2, innovations).size();
+    int disjointConnections1 = genome1.connections.size() - excessConnections - matchingConnections;
+    int disjointConnections2 = genome2.connections.size() - excessConnections - matchingConnections;
+    int disjointConnections = disjointConnections1 + disjointConnections2;
+    float avgWeightDiff = (float) totalWeightDiff / (float) matchingConnections;
+
+    float weightedExcess = EXCESS_COEFFICIENT * excessConnections;
+    float weightedDisjoint = DISJOINT_COEFFICIENT * disjointConnections;
+    float weightedAvgWeightDiff = WEIGHT_DIFF_COEFFICIENT * avgWeightDiff;
+
+    float maxGeneCount = Math.max(genome1.connections.size(), genome2.connections.size());
+    maxGeneCount = maxGeneCount < 20 ? 1 : maxGeneCount;
+
+    return (weightedExcess + weightedDisjoint) / maxGeneCount + weightedAvgWeightDiff;
+  }
+
+  public static ArrayList<Connection> excessConnections(Genome genome1, Genome genome2, HashMap<ConnectionGene, Integer> innovations) {
+    int genome1Max = genome1.maxInnovationNumber(innovations);
+    int genome2Max = genome2.maxInnovationNumber(innovations);
+
+    ArrayList<Connection> excessConnections = new ArrayList<>();
+
+    Genome larger;
+    int smallerMax;
+
+    if (genome1Max > genome2Max) {
+      larger = genome1;
+      smallerMax = genome2Max;
+    } else {
+      larger = genome2;
+      smallerMax = genome1Max;
+    }
+
+    for (Connection connection : larger.connections) {
+      if (innovations.get(connection.getGene()) > smallerMax) {
+        excessConnections.add(connection);
+      }
+    }
+
+    return excessConnections;
+  }
+
+  private int maxInnovationNumber(HashMap<ConnectionGene, Integer> innovations) {
+    int max = Integer.MIN_VALUE;
+
+    for (Connection connection : connections) {
+      int innovationNumber = innovations.get(connection.getGene());
+
+      if (innovationNumber > max) {
+        max = innovationNumber;
+      }
+    }
+
+    return max;
   }
 
   private void initialiseGenome(HashMap<ConnectionGene, Integer> innovations) {
