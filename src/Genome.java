@@ -1,6 +1,6 @@
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 class Genome {
@@ -17,7 +17,7 @@ class Genome {
   public final int INPUT_COUNT;
   public final int OUTPUT_COUNT;
 
-  public Genome(int inputCount, int outputCount, HashMap<ConnectionGene, Integer> innovations) {
+  public Genome(int inputCount, int outputCount, Map<ConnectionGene, Integer> innovations) {
     this.INPUT_COUNT = inputCount;
     this.OUTPUT_COUNT = outputCount;
     this.nodeGenes = new ArrayList<>();
@@ -28,7 +28,7 @@ class Genome {
     initialiseGenome(innovations);
   }
 
-  public static float compatibilityDistance(Genome genome1, Genome genome2, HashMap<ConnectionGene, Integer> innovations) {
+  public static float compatibilityDistance(Genome genome1, Genome genome2, Map<ConnectionGene, Integer> innovations) {
     int matchingConnections = 0;
     int totalWeightDiff = 0;
 
@@ -61,7 +61,7 @@ class Genome {
     return (weightedExcess + weightedDisjoint) / maxGeneCount + weightedAvgWeightDiff;
   }
 
-  public static ArrayList<Connection> excessConnections(Genome genome1, Genome genome2, HashMap<ConnectionGene, Integer> innovations) {
+  public static ArrayList<Connection> excessConnections(Genome genome1, Genome genome2, Map<ConnectionGene, Integer> innovations) {
     int genome1Max = genome1.maxInnovationNumber(innovations);
     int genome2Max = genome2.maxInnovationNumber(innovations);
 
@@ -87,7 +87,7 @@ class Genome {
     return excessConnections;
   }
 
-  private int maxInnovationNumber(HashMap<ConnectionGene, Integer> innovations) {
+  private int maxInnovationNumber(Map<ConnectionGene, Integer> innovations) {
     int max = Integer.MIN_VALUE;
 
     for (Connection connection : connections) {
@@ -101,7 +101,7 @@ class Genome {
     return max;
   }
 
-  private void initialiseGenome(HashMap<ConnectionGene, Integer> innovations) {
+  private void initialiseGenome(Map<ConnectionGene, Integer> innovations) {
     for (int i = 0; i < INPUT_COUNT; i++) {
       nodeGenes.add(new NodeGene(NodeType.INPUT, i));
     }

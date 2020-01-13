@@ -14,10 +14,12 @@ class Population {
     this.genomes = new ArrayList<>();
     this.innovations = new HashMap<>();
 
-
+    for (int i = 0; i < POPULATION_COUNT; i++) {
+      genomes.add(new Genome(inputCount, outputCount, innovations));
+    }
   }
 
-  public static void addInnovation(ConnectionGene gene, HashMap<ConnectionGene, Integer> innovations) {
+  public static void addInnovation(ConnectionGene gene, Map<ConnectionGene, Integer> innovations) {
     innovations.put(gene, innovations.size());
   }
 }
