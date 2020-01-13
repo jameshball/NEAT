@@ -26,6 +26,13 @@ public class Connection {
   }
 
   public void setWeight(float weight) {
+    // Limits weights to the range -1.0 -> 1.0
+    if (weight > 1) {
+      weight = 1;
+    } else if (weight < -1) {
+      weight = -1;
+    }
+
     this.weight = weight;
   }
 

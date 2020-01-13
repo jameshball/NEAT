@@ -6,6 +6,8 @@ import static org.junit.Assert.*;
 
 public class TestSuite {
 
+  // TODO: Write tests for genome mutation.
+
   @Test
   public void genomeInitialises() {
     Random rng = new Random();
