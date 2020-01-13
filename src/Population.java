@@ -4,14 +4,14 @@ import java.util.List;
 import java.util.Map;
 
 class Population {
-  private List<Species> species;
+  private List<Genome> genomes;
   private Map<ConnectionGene, Integer> innovations;
 
   private final int POPULATION_COUNT;
 
   public Population(int populationCount, int inputCount, int outputCount) {
     this.POPULATION_COUNT = populationCount;
-    this.species = new ArrayList<>();
+    this.genomes = new ArrayList<>();
     this.innovations = new HashMap<>();
 
 

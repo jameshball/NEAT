@@ -7,10 +7,12 @@ class Genome {
   private List<NodeGene> nodeGenes;
   private List<Connection> connections;
   private Random rng;
+  private int species;
 
   private static final float EXCESS_COEFFICIENT = 1.0f;
   private static final float DISJOINT_COEFFICIENT = 1.0f;
   private static final float WEIGHT_DIFF_COEFFICIENT = 0.4f;
+  private static final int DEFAULT_SPECIES = 0;
 
   public final int INPUT_COUNT;
   public final int OUTPUT_COUNT;
@@ -22,6 +24,7 @@ class Genome {
     this.connections = new ArrayList<>();
     this.rng = new Random();
 
+    setSpecies(DEFAULT_SPECIES);
     initialiseGenome(innovations);
   }
 
@@ -131,5 +134,13 @@ class Genome {
 
   private int nodeCount() {
     return INPUT_COUNT + OUTPUT_COUNT;
+  }
+
+  public int getSpecies() {
+    return species;
+  }
+
+  public void setSpecies(int species) {
+    this.species = species;
   }
 }
