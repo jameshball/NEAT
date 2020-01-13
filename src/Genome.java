@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Random;
 
 class Genome {
-  private List<NodeGene> nodeGenes;
+  private List<NodeType> nodes;
   private List<Connection> connections;
   private Random rng;
   private int species;
@@ -13,6 +13,10 @@ class Genome {
   private static final float DISJOINT_COEFFICIENT = 1.0f;
   private static final float WEIGHT_DIFF_COEFFICIENT = 0.4f;
   private static final int DEFAULT_SPECIES = 0;
+  private static final float WEIGHT_MUTATION_RATE = 0.8f;
+  private static final float UNIFORM_PERTURBATION_RATE = 0.9f;
+  private static final float ADD_NEW_NODE_RATE = 0.03f;
+  private static final float ADD_NEW_CONNECTION_RATE = 0.05f;
 
   public final int INPUT_COUNT;
   public final int OUTPUT_COUNT;
@@ -20,7 +24,7 @@ class Genome {
   public Genome(int inputCount, int outputCount, Map<ConnectionGene, Integer> innovations) {
     this.INPUT_COUNT = inputCount;
     this.OUTPUT_COUNT = outputCount;
-    this.nodeGenes = new ArrayList<>();
+    this.nodes = new ArrayList<>();
     this.connections = new ArrayList<>();
     this.rng = new Random();
 
@@ -101,35 +105,77 @@ class Genome {
     return max;
   }
 
-  private void initialiseGenome(Map<ConnectionGene, Integer> innovations) {
-    for (int i = 0; i < INPUT_COUNT; i++) {
-      nodeGenes.add(new NodeGene(NodeType.INPUT, i));
-    }
+  public void mutateWeights() {
+    if (rng.nextFloat() < WEIGHT_MUTATION_RATE) {
+      for (Connection connection : connections) {
+        if (rng.nextFloat() < UNIFORM_PERTURBATION_RATE) {
+          float weight = connection.getWeight();
 
-    for (int i = INPUT_COUNT; i < nodeCount(); i++) {
-      nodeGenes.add(new NodeGene(NodeType.OUTPUT, i));
-
-      for (int j = 0; j < INPUT_COUNT; j++) {
-        // The ids of the nodeGenes in this case are just the indexes j and i.
-        ConnectionGene gene = new ConnectionGene(j, i);
-        float randomWeight = 2 * rng.nextFloat() - 1;
-
-        Population.addInnovation(gene, innovations);
-        connections.add(new Connection(gene, randomWeight));
+          connection.setWeight((float) (weight + rng.nextGaussian() / 5));
+        } else {
+          connection.setWeight(randomWeight());
+        }
       }
     }
   }
 
-  public NodeGene getNodeGene(int id) {
-    return nodeGenes.get(id);
+  public void mutateAddNode(Map<ConnectionGene, Integer> innovations) {
+    if (rng.nextFloat() < ADD_NEW_NODE_RATE) {
+      int randomConnectionIndex = rng.nextInt(connections.size());
+
+      Connection connection = connections.get(randomConnectionIndex);
+      connection.disable();
+
+      int newNodeId = addNode(NodeType.HIDDEN);
+      ConnectionGene gene1 = new ConnectionGene(connection.getIn(), newNodeId);
+      ConnectionGene gene2 = new ConnectionGene(newNodeId, connection.getOut());
+
+      addConnection(gene1, 1, innovations);
+      addConnection(gene2, connection.getWeight(), innovations);
+    }
+  }
+
+  private float randomWeight() {
+    return rng.nextFloat() * 2 - 1;
+  }
+
+  private void initialiseGenome(Map<ConnectionGene, Integer> innovations) {
+    for (int i = 0; i < INPUT_COUNT; i++) {
+      addNode(NodeType.INPUT);
+    }
+
+    for (int i = INPUT_COUNT; i < nodeCount(); i++) {
+      addNode(NodeType.OUTPUT);
+
+      for (int j = 0; j < INPUT_COUNT; j++) {
+        ConnectionGene gene = new ConnectionGene(j, i);
+
+        addConnection(gene, randomWeight(), innovations);
+      }
+    }
+  }
+
+  private void addConnection(ConnectionGene gene, float weight, Map<ConnectionGene, Integer> innovations) {
+    Population.addInnovation(gene, innovations);
+    connections.add(new Connection(gene, weight));
+  }
+
+  private int addNode(NodeType node) {
+    nodes.add(node);
+
+    return nodes.size() - 1;
+  }
+
+  public NodeType getNodeGene(int index) {
+    return nodes.get(index);
   }
 
   public Connection getConnection(int index) {
     return connections.get(index);
   }
 
-  public boolean containsNode(NodeGene node) {
-    return nodeGenes.contains(node);
+  public boolean containsNode(NodeType node, int index) {
+    return getNodeGene(index).equals(node);
   }
 
   private int nodeCount() {
