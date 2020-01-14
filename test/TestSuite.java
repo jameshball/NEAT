@@ -1,6 +1,7 @@
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import static org.junit.Assert.*;
 
@@ -37,7 +38,7 @@ public class TestSuite {
 
   @Test
   public void testInnovations() {
-    HashMap<ConnectionGene, Integer> innovations = new HashMap<>();
+    Map<ConnectionGene, Integer> innovations = new HashMap<>();
 
     // Arbitrary input and output counts.
     int inputCount = 10;

@@ -9,10 +9,10 @@ class Genome {
   private Random rng;
   private int species;
 
+  private static final int DEFAULT_SPECIES = 0;
   private static final float EXCESS_COEFFICIENT = 1.0f;
   private static final float DISJOINT_COEFFICIENT = 1.0f;
   private static final float WEIGHT_DIFF_COEFFICIENT = 0.4f;
-  private static final int DEFAULT_SPECIES = 0;
   private static final float WEIGHT_MUTATION_RATE = 0.8f;
   private static final float UNIFORM_PERTURBATION_RATE = 0.9f;
   private static final float ADD_NEW_NODE_RATE = 0.03f;
@@ -65,11 +65,11 @@ class Genome {
     return (weightedExcess + weightedDisjoint) / maxGeneCount + weightedAvgWeightDiff;
   }
 
-  public static ArrayList<Connection> excessConnections(Genome genome1, Genome genome2, Map<ConnectionGene, Integer> innovations) {
+  public static List<Connection> excessConnections(Genome genome1, Genome genome2, Map<ConnectionGene, Integer> innovations) {
     int genome1Max = genome1.maxInnovationNumber(innovations);
     int genome2Max = genome2.maxInnovationNumber(innovations);
 
-    ArrayList<Connection> excessConnections = new ArrayList<>();
+    List<Connection> excessConnections = new ArrayList<>();
 
     Genome larger;
     int smallerMax;
@@ -135,6 +135,39 @@ class Genome {
     }
   }
 
+  public void mutateAddConnection(Map<ConnectionGene, Integer> innovations) {
+    List<ConnectionGene> missingGenes = missingGenes();
+    int randomIndex = rng.nextInt(missingGenes.size());
+
+    addConnection(missingGenes.get(randomIndex), randomWeight(), innovations);
+  }
+
+  private List<ConnectionGene> missingGenes() {
+    List<ConnectionGene> genes = new ArrayList<>();
+
+    for (int i = 0; i < nodes.size(); i++) {
+      for (int j = 0; j < nodes.size(); j++) {
+        ConnectionGene gene = new ConnectionGene(i, j);
+
+        if (!containsConnectionGene(gene)) {
+          genes.add(gene);
+        }
+      }
+    }
+
+    return genes;
+  }
+
+  private boolean containsConnectionGene(ConnectionGene gene) {
+    for (Connection connection : connections) {
+      if (connection.getGene().equals(gene)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   private float randomWeight() {
     return rng.nextFloat() * 2 - 1;
   }
@@ -144,7 +177,7 @@ class Genome {
       addNode(NodeType.INPUT);
     }
 
-    for (int i = INPUT_COUNT; i < nodeCount(); i++) {
+    for (int i = INPUT_COUNT; i < initialNodeCount(); i++) {
       addNode(NodeType.OUTPUT);
 
       for (int j = 0; j < INPUT_COUNT; j++) {
@@ -178,7 +211,7 @@ class Genome {
     return getNodeGene(index).equals(node);
   }
 
-  private int nodeCount() {
+  private int initialNodeCount() {
     return INPUT_COUNT + OUTPUT_COUNT;
   }
 
