@@ -136,10 +136,12 @@ class Genome {
   }
 
   public void mutateAddConnection(Map<ConnectionGene, Integer> innovations) {
-    List<ConnectionGene> missingGenes = missingGenes();
-    int randomIndex = rng.nextInt(missingGenes.size());
+    if (rng.nextFloat() < ADD_NEW_CONNECTION_RATE) {
+      List<ConnectionGene> missingGenes = missingGenes();
+      int randomIndex = rng.nextInt(missingGenes.size());
 
-    addConnection(missingGenes.get(randomIndex), randomWeight(), innovations);
+      addConnection(missingGenes.get(randomIndex), randomWeight(), innovations);
+    }
   }
 
   private List<ConnectionGene> missingGenes() {
