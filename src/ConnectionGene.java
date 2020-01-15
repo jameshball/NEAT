@@ -37,7 +37,4 @@ class ConnectionGene {
   public int getOut() {
     return out;
   }
-
-  // TODO: Create a hash function to aid the looking up of connectionGenes in
-  // historial innovations.
 }

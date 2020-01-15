@@ -1,5 +1,4 @@
 import org.junit.Test;
-import org.w3c.dom.Node;
 
 import java.util.Hashtable;
 import java.util.Map;
@@ -42,6 +41,7 @@ public class TestSuite {
     // Arbitrary input and output counts.
     int inputCount = 10;
     int outputCount = 10;
+    // Genome isn't used, but updates innovations map.
     Genome genome = new Genome(inputCount, outputCount, innovations);
 
     assertEquals(innovations.size(), inputCount * outputCount);
