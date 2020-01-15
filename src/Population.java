@@ -1,5 +1,5 @@
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +12,7 @@ class Population {
   public Population(int populationCount, int inputCount, int outputCount) {
     this.POPULATION_COUNT = populationCount;
     this.genomes = new ArrayList<>();
-    this.innovations = new HashMap<>();
+    this.innovations = new Hashtable<>();
 
     for (int i = 0; i < POPULATION_COUNT; i++) {
       genomes.add(new Genome(inputCount, outputCount, innovations));

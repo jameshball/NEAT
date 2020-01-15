@@ -21,15 +21,19 @@ class Genome {
   public final int INPUT_COUNT;
   public final int OUTPUT_COUNT;
 
-  public Genome(int inputCount, int outputCount, Map<ConnectionGene, Integer> innovations) {
+  public Genome(int inputCount, int outputCount, Random rng, Map<ConnectionGene, Integer> innovations) {
     this.INPUT_COUNT = inputCount;
     this.OUTPUT_COUNT = outputCount;
     this.nodes = new ArrayList<>();
     this.connections = new ArrayList<>();
-    this.rng = new Random();
+    this.rng = rng;
 
     setSpecies(DEFAULT_SPECIES);
     initialiseGenome(innovations);
+  }
+
+  public Genome(int inputCount, int outputCount, Map<ConnectionGene, Integer> innovations) {
+    this(inputCount, outputCount, new Random(), innovations);
   }
 
   public float compatibilityDistance(Genome genome, Map<ConnectionGene, Integer> innovations) {
@@ -138,6 +142,11 @@ class Genome {
   public void mutateAddConnection(Map<ConnectionGene, Integer> innovations) {
     if (rng.nextFloat() < ADD_NEW_CONNECTION_RATE) {
       List<ConnectionGene> missingGenes = missingGenes();
+
+      if (missingGenes.isEmpty()) {
+        return;
+      }
+
       int randomIndex = rng.nextInt(missingGenes.size());
 
       addConnection(missingGenes.get(randomIndex), randomWeight(), innovations);
@@ -151,8 +160,10 @@ class Genome {
       for (int j = 0; j < nodes.size(); j++) {
         ConnectionGene gene = new ConnectionGene(i, j);
 
-        if (!containsConnectionGene(gene)) {
-          genes.add(gene);
+        if (getNode(i) != NodeType.OUTPUT && getNode(j) != NodeType.INPUT) {
+          if (!containsConnectionGene(gene)) {
+            genes.add(gene);
+          }
         }
       }
     }
@@ -201,16 +212,34 @@ class Genome {
     return nodes.size() - 1;
   }
 
-  public NodeType getNodeGene(int index) {
+  public NodeType getNode(int index) {
     return nodes.get(index);
+  }
+
+  public int nodeCount() {
+    return nodes.size();
   }
 
   public Connection getConnection(int index) {
     return connections.get(index);
   }
 
+  public Connection getConnection(ConnectionGene gene) {
+    for (Connection connection : connections) {
+      if (connection.getGene().equals(gene)) {
+        return connection;
+      }
+    }
+
+    return null;
+  }
+
+  public int connectionCount() {
+    return connections.size();
+  }
+
   public boolean containsNode(NodeType node, int index) {
-    return getNodeGene(index).equals(node);
+    return getNode(index).equals(node);
   }
 
   private int initialNodeCount() {

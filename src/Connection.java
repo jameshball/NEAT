@@ -44,6 +44,10 @@ public class Connection {
     enabled = false;
   }
 
+  public boolean isDisabled() {
+    return !enabled;
+  }
+
   public int getIn() {
     return gene.getIn();
   }
