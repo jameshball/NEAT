@@ -116,4 +116,31 @@ public class TestSuite {
     assertTrue(genome.getNode(in).equals(NodeType.HIDDEN)
             || genome.getNode(out).equals(NodeType.HIDDEN));
   }
+
+  @Test
+  public void testWeightMutation() {
+    Map<ConnectionGene, Integer> innovations = new Hashtable<>();
+
+    // Arbitrary input and output counts.
+    int inputCount = 10;
+    int outputCount = 10;
+
+    // Seed of 5 results in weights being mutated.
+    Genome genome = new Genome(inputCount, outputCount, new Random(5), innovations);
+
+    float[] weights = new float[genome.connectionCount()];
+
+    for (int i = 0; i < genome.connectionCount(); i++) {
+      weights[i] = genome.getConnection(i).getWeight();
+    }
+
+    genome.mutateWeights();
+
+    for (int i = 0; i < genome.connectionCount(); i++) {
+      float newWeight = genome.getConnection(i).getWeight();
+
+      assertNotEquals(newWeight, weights[i]);
+      assertTrue(newWeight <= 1 && newWeight >= -1);
+    }
+  }
 }
