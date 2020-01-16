@@ -119,6 +119,10 @@ class Genome {
     return max;
   }
 
+  public float evaluateFitness(State state) {
+    return state.evaluateFitness();
+  }
+
   public void mutateWeights() {
     if (rng.nextFloat() < WEIGHT_MUTATION_RATE) {
       for (Connection connection : connections) {
