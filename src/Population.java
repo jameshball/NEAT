@@ -21,6 +21,10 @@ class Population {
 
   // TODO: Implement end-of-generational functions.
 
+  private static void crossover() {
+
+  }
+
   public static void addInnovation(ConnectionGene gene, Map<ConnectionGene, Integer> innovations) {
     if (!innovations.containsKey(gene)) {
       innovations.put(gene, innovations.size());

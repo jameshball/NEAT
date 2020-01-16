@@ -49,13 +49,12 @@ class Genome {
 
         if (innovationNumber1 == innovationNumber2) {
           matchingConnections++;
-
           totalWeightDiff += Math.abs(connection1.getWeight() - connection2.getWeight());
         }
       }
     }
 
-    int excessConnections = excessConnections(genome, innovations).size();
+    int excessConnections = partitionConnections(genome, innovations)[2].size();
     int disjointConnections1 = connections.size() - excessConnections - matchingConnections;
     int disjointConnections2 = genome.connections.size() - excessConnections - matchingConnections;
     int disjointConnections = disjointConnections1 + disjointConnections2;
@@ -71,30 +70,39 @@ class Genome {
     return (weightedExcess + weightedDisjoint) / maxGeneCount + weightedAvgWeightDiff;
   }
 
-  public List<Connection> excessConnections(Genome genome, Map<ConnectionGene, Integer> innovations) {
+  // Returns three lists; matching, disjoint and excess connections.
+  public List<Connection>[] partitionConnections(Genome genome, Map<ConnectionGene, Integer> innovations) {
     int genome1Max = maxInnovationNumber(innovations);
     int genome2Max = genome.maxInnovationNumber(innovations);
 
+    List<Connection> matchingConnections = new ArrayList<>();
+    List<Connection> disjointConnections = new ArrayList<>();
     List<Connection> excessConnections = new ArrayList<>();
 
-    Genome larger;
-    int smallerMax;
+    boolean genome1MaxLarger = genome1Max > genome2Max;
+    Genome larger = genome1MaxLarger ? this : genome;
+    Genome smaller = genome1MaxLarger ? genome : this;
+    int smallerMax = genome1MaxLarger ? genome2Max : genome1Max;
 
-    if (genome1Max > genome2Max) {
-      larger = this;
-      smallerMax = genome2Max;
-    } else {
-      larger = genome;
-      smallerMax = genome1Max;
-    }
+    boolean connectionFound = false;
 
     for (Connection connection : larger.connections) {
+      if (smaller.getConnection(connection.getGene()) != null) {
+        connectionFound = true;
+        matchingConnections.add(connection);
+      }
+
       if (innovations.get(connection.getGene()) > smallerMax) {
+        connectionFound = true;
         excessConnections.add(connection);
+      }
+
+      if (!connectionFound) {
+        disjointConnections.add(connection);
       }
     }
 
-    return excessConnections;
+    return new List[] {matchingConnections, disjointConnections, excessConnections};
   }
 
   private int maxInnovationNumber(Map<ConnectionGene, Integer> innovations) {
