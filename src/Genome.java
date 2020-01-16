@@ -36,6 +36,8 @@ class Genome {
     this(inputCount, outputCount, new Random(), innovations);
   }
 
+  // TODO: Implement feedforward algorithm.
+
   public float compatibilityDistance(Genome genome, Map<ConnectionGene, Integer> innovations) {
     int matchingConnections = 0;
     int totalWeightDiff = 0;

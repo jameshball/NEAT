@@ -19,7 +19,11 @@ class Population {
     }
   }
 
+  // TODO: Implement end-of-generational functions.
+
   public static void addInnovation(ConnectionGene gene, Map<ConnectionGene, Integer> innovations) {
-    innovations.put(gene, innovations.size());
+    if (!innovations.containsKey(gene)) {
+      innovations.put(gene, innovations.size());
+    }
   }
 }

@@ -1,15 +1,41 @@
 import org.junit.Test;
 
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import static org.junit.Assert.*;
 
 public class TestSuite {
+  private static Random rng = new Random();
+
+
+  // TODO: Explicitly test missingGenes (mitigate the fact
+  //  that missingGenes is private).
+
+  @Test
+  public void testExcessConnections() {
+    Map<ConnectionGene, Integer> innovations = new Hashtable<>();
+
+    // Arbitrary input and output counts.
+    int inputCount = 10;
+    int outputCount = 10;
+
+    Genome genome1 = new Genome(inputCount, outputCount, new Random(0), innovations);
+    Genome genome2 = new Genome(inputCount, outputCount, new Random(0), innovations);
+    Genome genome3 = new Genome(inputCount, outputCount, new Random(5), innovations);
+    genome3.mutateAddNode(innovations);
+
+    List<Connection> excessConnections1 = genome1.excessConnections(genome2, innovations);
+    List<Connection> excessConnections2 = genome1.excessConnections(genome3, innovations);
+
+    assertTrue(excessConnections1.isEmpty());
+    assertEquals(2, excessConnections2.size());
+    assertEquals(excessConnections2.get(1).getIn(), excessConnections2.get(0).getOut());
+  }
 
   @Test
   public void genomeInitialises() {
-    Random rng = new Random();
     Map<ConnectionGene, Integer> innovations = new Hashtable<>();
 
     int inputCount = rng.nextInt(20) + 1;
@@ -27,8 +53,8 @@ public class TestSuite {
       assertNotNull(connection);
       assertNotNull(in);
       assertNotNull(out);
-      assertEquals(in, NodeType.INPUT);
-      assertEquals(out, NodeType.OUTPUT);
+      assertEquals(NodeType.INPUT, in);
+      assertEquals(NodeType.OUTPUT, out);
       assertTrue(genome.containsNode(in, connection.getIn()));
       assertTrue(genome.containsNode(out, connection.getOut()));
     }
@@ -38,9 +64,8 @@ public class TestSuite {
   public void testInnovations() {
     Map<ConnectionGene, Integer> innovations = new Hashtable<>();
 
-    // Arbitrary input and output counts.
-    int inputCount = 10;
-    int outputCount = 10;
+    int inputCount = rng.nextInt(20) + 1;
+    int outputCount = rng.nextInt(20) + 1;
     // Genome isn't used, but updates innovations map.
     Genome genome = new Genome(inputCount, outputCount, innovations);
 
@@ -49,9 +74,9 @@ public class TestSuite {
     ConnectionGene dummyGene = new ConnectionGene(Integer.MAX_VALUE, 0);
 
     Population.addInnovation(dummyGene, innovations);
-    assertEquals(innovations.size(), inputCount * outputCount + 1);
+    assertEquals(inputCount * outputCount + 1, innovations.size());
     Population.addInnovation(dummyGene, innovations);
-    assertEquals(innovations.size(), inputCount * outputCount + 1);
+    assertEquals(inputCount * outputCount + 1, innovations.size());
   }
 
   @Test
@@ -66,8 +91,8 @@ public class TestSuite {
     Genome genome = new Genome(inputCount, outputCount, new Random(5), innovations);
     genome.mutateAddNode(innovations);
 
-    assertEquals(genome.nodeCount(), inputCount + outputCount + 1);
-    assertEquals(genome.connectionCount(), inputCount * outputCount + 2);
+    assertEquals(inputCount + outputCount + 1, genome.nodeCount());
+    assertEquals(inputCount * outputCount + 2, genome.connectionCount());
 
     int in = genome.getConnection(genome.connectionCount() - 2).getIn();
     int out = genome.getConnection(genome.connectionCount() - 1).getOut();
@@ -77,8 +102,8 @@ public class TestSuite {
 
     int newNode = genome.getConnection(genome.connectionCount() - 1).getIn();
 
-    assertEquals(newNode, genome.nodeCount() - 1);
-    assertEquals(genome.getNode(genome.nodeCount() - 1), NodeType.HIDDEN);
+    assertEquals(genome.nodeCount() - 1, newNode);
+    assertEquals(NodeType.HIDDEN, genome.getNode(genome.nodeCount() - 1));
   }
 
   @Test
@@ -94,8 +119,8 @@ public class TestSuite {
     genome.mutateAddConnection(innovations);
 
     // There are no free connections initially, so none should be added.
-    assertEquals(genome.connectionCount(), inputCount * outputCount);
-    assertEquals(innovations.size(), inputCount * outputCount);
+    assertEquals(inputCount * outputCount, genome.connectionCount());
+    assertEquals(inputCount * outputCount, innovations.size());
 
     innovations = new Hashtable<>();
     // Seed of 503 results in a connection and node being 'randomly' added.
@@ -103,13 +128,13 @@ public class TestSuite {
     genome.mutateAddNode(innovations);
     genome.mutateAddConnection(innovations);
 
-    assertEquals(innovations.size(), inputCount * outputCount + 3);
+    assertEquals(inputCount * outputCount + 3, innovations.size());
 
     int in = genome.getConnection(genome.connectionCount() - 1).getIn();
     int out = genome.getConnection(genome.connectionCount() - 1).getOut();
 
-    assertNotEquals(genome.getNode(in), NodeType.OUTPUT);
-    assertNotEquals(genome.getNode(out), NodeType.INPUT);
+    assertNotEquals(NodeType.OUTPUT, genome.getNode(in));
+    assertNotEquals(NodeType.INPUT, genome.getNode(out));
     assertTrue(innovations.containsKey(new ConnectionGene(in, out)));
     assertTrue(genome.getNode(in).equals(NodeType.HIDDEN)
             || genome.getNode(out).equals(NodeType.HIDDEN));
@@ -137,7 +162,7 @@ public class TestSuite {
     for (int i = 0; i < genome.connectionCount(); i++) {
       float newWeight = genome.getConnection(i).getWeight();
 
-      assertNotEquals(newWeight, weights[i]);
+      assertNotEquals(weights[i], newWeight);
       assertTrue(newWeight <= 1 && newWeight >= -1);
     }
   }
