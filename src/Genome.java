@@ -70,6 +70,8 @@ class Genome {
     return (weightedExcess + weightedDisjoint) / maxGeneCount + weightedAvgWeightDiff;
   }
 
+  // TODO: Maybe rewrite this to make it clearer and/or more efficient.
+
   // Returns three lists; matching, disjoint and excess connections.
   public List<Connection>[] partitionConnections(Genome genome, Map<ConnectionGene, Integer> innovations) {
     int genome1Max = maxInnovationNumber(innovations);

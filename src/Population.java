@@ -28,7 +28,8 @@ class Population {
     List<Connection> disjointConnections = partitionedConnections[1];
     List<Connection> excessConnections = partitionedConnections[2];
 
-    // TODO: Assess whether Nodes need an ID or not.
+    // TODO: Need to re-implement node ids since children genomes can have nodes
+    //  that are missing (e.g. 1,2,3,4,6,7,8).
   }
 
   public static void addInnovation(ConnectionGene gene, Map<ConnectionGene, Integer> innovations) {
