@@ -17,6 +17,7 @@ class Genome {
   private static final float UNIFORM_PERTURBATION_RATE = 0.9f;
   private static final float ADD_NEW_NODE_RATE = 0.03f;
   private static final float ADD_NEW_CONNECTION_RATE = 0.05f;
+  private static final float SIGMOID_CONSTANT = 4.9f;
   // Decreasing this may dramatically affect performance.
   private static final float ACTIVATION_STABILISATION_THRESHOLD = 0.02f;
 
@@ -55,12 +56,35 @@ class Genome {
     float[] prevNodeValues = new float[nodeCount()];
 
     for (int i = 0; i < INPUT_COUNT; i++) {
-      nodeValues[i] = inputs[i];
+      nodeValues[i] = sigmoid(inputs[i]);
     }
 
-    while (!isStabilised(nodeValues, prevNodeValues)) {
+    do {
+      for (int i = INPUT_COUNT; i < nodeCount(); i++) {
+        prevNodeValues[i] = sigmoid(nodeValues[i]);
+      }
 
+      for (int i = INPUT_COUNT; i < nodeCount(); i++) {
+        for (Connection connection : connections) {
+          if (connection.getOut() == i) {
+            nodeValues[i] += prevNodeValues[connection.getIn()] * connection.getWeight();
+          }
+        }
+      }
+    } while (!isStabilised(nodeValues, prevNodeValues));
+
+    float[] outputs = new float[OUTPUT_COUNT];
+
+    for (int i = INPUT_COUNT; i < INPUT_COUNT + OUTPUT_COUNT; i++) {
+      outputs[i] = nodeValues[i];
     }
+
+    return outputs;
+  }
+
+  // TODO: Implement activation function in State, so it can be user defined.
+  private static float sigmoid(float x) {
+    return (float) (1 / (1 + Math.exp(-SIGMOID_CONSTANT * x)));
   }
 
   private boolean isStabilised(float[] nodeValues, float[] prevNodeValues) {
