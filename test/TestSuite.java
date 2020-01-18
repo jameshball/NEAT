@@ -13,6 +13,8 @@ public class TestSuite {
   private static final int INPUT_COUNT = 10;
   private static final int OUTPUT_COUNT = 10;
 
+  // TODO: Test crossover, placeInSpecies, and activate functions.
+
   @Test
   public void genomeInitialises() {
     Map<ConnectionGene, Integer> innovations = new Hashtable<>();
