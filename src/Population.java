@@ -9,6 +9,7 @@ class Population {
 
   private static final float INHERITED_GENE_DISABLED_RATE = 0.75f;
   private static final float CROSSOVER_RATE = 0.75f;
+  private static final float COMPATIBILITY_DISTANCE_THRESHOLD = 3.0f;
 
   public Population(int populationCount, int inputCount, int outputCount) {
     this.POPULATION_COUNT = populationCount;
@@ -78,6 +79,31 @@ class Population {
       childConns.addAll(parent2Conns);
       return new Genome(inputCount, outputCount, childConns, parent2.getNodes());
     }
+  }
+
+  private void placeInSpecies(Genome genome) {
+    Set<Integer> seenSpecies = new HashSet<>();
+
+    int maxSpecies = 0;
+
+    for (Genome rep : genomes) {
+      int species = rep.getSpecies();
+
+      if (!seenSpecies.contains(species)) {
+        if (genome.compatibilityDistance(rep, innovations) < COMPATIBILITY_DISTANCE_THRESHOLD) {
+          genome.setSpecies(species);
+          return;
+        } else {
+          seenSpecies.add(species);
+        }
+      }
+
+      if (species > maxSpecies) {
+        maxSpecies = species;
+      }
+    }
+
+    genome.setSpecies(maxSpecies + 1);
   }
 
   private float adjustedFitness(Genome genome, State state) {
