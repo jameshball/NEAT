@@ -32,6 +32,16 @@ class Genome {
     initialiseGenome(innovations);
   }
 
+  public Genome(int inputCount, int outputCount, List<Connection> connections, List<NodeType> nodes) {
+    this.INPUT_COUNT = inputCount;
+    this.OUTPUT_COUNT = outputCount;
+    this.connections = connections;
+    this.nodes = nodes;
+    this.rng = new Random();
+
+    setSpecies(DEFAULT_SPECIES);
+  }
+
   public Genome(int inputCount, int outputCount, Map<ConnectionGene, Integer> innovations) {
     this(inputCount, outputCount, new Random(), innovations);
   }
@@ -39,72 +49,50 @@ class Genome {
   // TODO: Implement feedforward algorithm.
 
   public float compatibilityDistance(Genome genome, Map<ConnectionGene, Integer> innovations) {
-    int matchingConnections = 0;
+    int matchingConns = 0;
     int totalWeightDiff = 0;
 
-    for (Connection connection1 : connections) {
-      for (Connection connection2 : genome.connections) {
-        int innovationNumber1 = innovations.get(connection1.getGene());
-        int innovationNumber2 = innovations.get(connection2.getGene());
+    for (Connection conn1 : connections) {
+      for (Connection conn2 : genome.connections) {
+        int innovationNum1 = innovations.get(conn1.getGene());
+        int innovationNum2 = innovations.get(conn2.getGene());
 
-        if (innovationNumber1 == innovationNumber2) {
-          matchingConnections++;
-          totalWeightDiff += Math.abs(connection1.getWeight() - connection2.getWeight());
+        if (innovationNum1 == innovationNum2) {
+          matchingConns++;
+          totalWeightDiff += Math.abs(conn1.getWeight() - conn2.getWeight());
         }
       }
     }
 
-    int excessConnections = partitionConnections(genome, innovations)[2].size();
-    int disjointConnections1 = connections.size() - excessConnections - matchingConnections;
-    int disjointConnections2 = genome.connections.size() - excessConnections - matchingConnections;
-    int disjointConnections = disjointConnections1 + disjointConnections2;
-    float avgWeightDiff = (float) totalWeightDiff / (float) matchingConnections;
-
-    float weightedExcess = EXCESS_COEFFICIENT * excessConnections;
-    float weightedDisjoint = DISJOINT_COEFFICIENT * disjointConnections;
-    float weightedAvgWeightDiff = WEIGHT_DIFF_COEFFICIENT * avgWeightDiff;
+    int excessConns = numberOfExcessConnections(genome, innovations);
+    int disjointConns1 = connections.size() - excessConns - matchingConns;
+    int disjointConns2 = genome.connections.size() - excessConns - matchingConns;
+    int disjointConns = disjointConns1 + disjointConns2;
+    float avgWeightDiff = (float) totalWeightDiff / (float) matchingConns;
 
     float maxGeneCount = Math.max(connections.size(), genome.connections.size());
     maxGeneCount = maxGeneCount < 20 ? 1 : maxGeneCount;
 
-    return (weightedExcess + weightedDisjoint) / maxGeneCount + weightedAvgWeightDiff;
+    return (EXCESS_COEFFICIENT * excessConns + DISJOINT_COEFFICIENT * disjointConns)
+           / (maxGeneCount + WEIGHT_DIFF_COEFFICIENT * avgWeightDiff);
   }
 
-  // TODO: Maybe rewrite this to make it clearer and/or more efficient.
-
-  // Returns three lists; matching, disjoint and excess connections.
-  public List<Connection>[] partitionConnections(Genome genome, Map<ConnectionGene, Integer> innovations) {
+  public int numberOfExcessConnections(Genome genome, Map<ConnectionGene, Integer> innovations) {
     int genome1Max = maxInnovationNumber(innovations);
     int genome2Max = genome.maxInnovationNumber(innovations);
 
-    List<Connection> matchingConnections = new ArrayList<>();
-    List<Connection> disjointConnections = new ArrayList<>();
-    List<Connection> excessConnections = new ArrayList<>();
+    int excessConns = 0;
 
-    boolean genome1MaxLarger = genome1Max > genome2Max;
-    Genome larger = genome1MaxLarger ? this : genome;
-    Genome smaller = genome1MaxLarger ? genome : this;
-    int smallerMax = genome1MaxLarger ? genome2Max : genome1Max;
-
-    boolean connectionFound = false;
+    Genome larger = genome1Max > genome2Max ? this : genome;
+    int smallerMax = Math.min(genome1Max, genome2Max);
 
     for (Connection connection : larger.connections) {
-      if (smaller.getConnection(connection.getGene()) != null) {
-        connectionFound = true;
-        matchingConnections.add(connection);
-      }
-
       if (innovations.get(connection.getGene()) > smallerMax) {
-        connectionFound = true;
-        excessConnections.add(connection);
-      }
-
-      if (!connectionFound) {
-        disjointConnections.add(connection);
+        excessConns++;
       }
     }
 
-    return new List[] {matchingConnections, disjointConnections, excessConnections};
+    return excessConns;
   }
 
   private int maxInnovationNumber(Map<ConnectionGene, Integer> innovations) {
@@ -141,9 +129,9 @@ class Genome {
 
   public void mutateAddNode(Map<ConnectionGene, Integer> innovations) {
     if (rng.nextFloat() < ADD_NEW_NODE_RATE) {
-      int randomConnectionIndex = rng.nextInt(connections.size());
+      int randomConnIndex = rng.nextInt(connections.size());
 
-      Connection connection = connections.get(randomConnectionIndex);
+      Connection connection = connections.get(randomConnIndex);
       connection.disable();
 
       int newNodeId = addNode(NodeType.HIDDEN);
@@ -217,19 +205,23 @@ class Genome {
     }
   }
 
-  private void addConnection(ConnectionGene gene, float weight, Map<ConnectionGene, Integer> innovations) {
+  private void addConnection(ConnectionGene gene, float weight,
+                             Map<ConnectionGene, Integer> innovations) {
     Population.addInnovation(gene, innovations);
     connections.add(new Connection(gene, weight));
   }
 
   private int addNode(NodeType node) {
     nodes.add(node);
-
     return nodes.size() - 1;
   }
 
   public NodeType getNode(int index) {
     return nodes.get(index);
+  }
+
+  public List<NodeType> getNodes() {
+    return nodes;
   }
 
   public int nodeCount() {
@@ -248,6 +240,16 @@ class Genome {
     }
 
     return null;
+  }
+
+  public List<Connection> getConnections() {
+    List<Connection> connsCopy = new ArrayList<>();
+
+    for (Connection connection : connections) {
+      connsCopy.add(connection.copy());
+    }
+
+    return connsCopy;
   }
 
   public int connectionCount() {

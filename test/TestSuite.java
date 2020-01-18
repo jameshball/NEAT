@@ -13,42 +13,6 @@ public class TestSuite {
   private static final int INPUT_COUNT = 10;
   private static final int OUTPUT_COUNT = 10;
 
-  // TODO: Create a more convincing testPartitionConnections test.
-
-  @Test
-  public void testPartitionConnections() {
-    Map<ConnectionGene, Integer> innovations = new Hashtable<>();
-
-    Genome genome1 = new Genome(INPUT_COUNT, OUTPUT_COUNT, new Random(0), innovations);
-    Genome genome2 = new Genome(INPUT_COUNT, OUTPUT_COUNT, new Random(0), innovations);
-    Genome genome3 = new Genome(INPUT_COUNT, OUTPUT_COUNT, new Random(5), innovations);
-    genome3.mutateAddNode(innovations);
-
-    List<Connection>[] partitionedConnections1 = genome1.partitionConnections(genome2, innovations);
-    List<Connection>[] partitionedConnections2 = genome1.partitionConnections(genome3, innovations);
-
-    List<Connection> matchingConnections1 = partitionedConnections1[0];
-    List<Connection> matchingConnections2 = partitionedConnections2[0];
-
-    assertEquals(matchingConnections1.size(), matchingConnections2.size());
-
-    List<Connection> disjointConnections1 = partitionedConnections1[1];
-    List<Connection> disjointConnections2 = partitionedConnections2[1];
-
-    assertTrue(disjointConnections1.isEmpty());
-    assertTrue(disjointConnections2.isEmpty());
-
-    List<Connection> excessConnections1 = partitionedConnections1[2];
-    List<Connection> excessConnections2 = partitionedConnections2[2];
-
-    assertTrue(excessConnections1.isEmpty());
-    assertEquals(2, excessConnections2.size());
-    assertEquals(excessConnections2.get(1).getIn(), excessConnections2.get(0).getOut());
-
-    int totalConnections = matchingConnections2.size() + disjointConnections2.size() + excessConnections2.size();
-    assertEquals(genome3.connectionCount(), totalConnections);
-  }
-
   @Test
   public void genomeInitialises() {
     Map<ConnectionGene, Integer> innovations = new Hashtable<>();

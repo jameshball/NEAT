@@ -21,6 +21,10 @@ public class Connection {
     this(gene.getIn(), gene.getOut(), weight);
   }
 
+  public Connection copy() {
+    return new Connection(getIn(), getOut(), weight, enabled);
+  }
+
   public float getWeight() {
     return weight;
   }
