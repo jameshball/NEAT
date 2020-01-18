@@ -17,6 +17,8 @@ class Genome {
   private static final float UNIFORM_PERTURBATION_RATE = 0.9f;
   private static final float ADD_NEW_NODE_RATE = 0.03f;
   private static final float ADD_NEW_CONNECTION_RATE = 0.05f;
+  // Decreasing this may dramatically affect performance.
+  private static final float ACTIVATION_STABILISATION_THRESHOLD = 0.02f;
 
   public final int INPUT_COUNT;
   public final int OUTPUT_COUNT;
@@ -46,7 +48,32 @@ class Genome {
     this(inputCount, outputCount, new Random(), innovations);
   }
 
-  // TODO: Implement feedforward algorithm.
+  public float[] activate(float[] inputs) {
+    assert inputs.length == INPUT_COUNT;
+
+    float[] nodeValues = new float[nodeCount()];
+    float[] prevNodeValues = new float[nodeCount()];
+
+    for (int i = 0; i < INPUT_COUNT; i++) {
+      nodeValues[i] = inputs[i];
+    }
+
+    while (!isStabilised(nodeValues, prevNodeValues)) {
+
+    }
+  }
+
+  private boolean isStabilised(float[] nodeValues, float[] prevNodeValues) {
+    assert nodeValues.length == prevNodeValues.length;
+
+    float totalRelDiff = 0;
+
+    for (int i = INPUT_COUNT; i < nodeValues.length; i++) {
+      totalRelDiff += Math.abs((nodeValues[i] - prevNodeValues[i]) / prevNodeValues[i]);
+    }
+
+    return totalRelDiff < ACTIVATION_STABILISATION_THRESHOLD;
+  }
 
   public float compatibilityDistance(Genome genome, Map<ConnectionGene, Integer> innovations) {
     int matchingConns = 0;
