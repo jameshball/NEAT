@@ -1,6 +1,7 @@
 import java.util.*;
 
 class Population {
+  private State[] states;
   private Genome[] genomes;
   private Map<ConnectionGene, Integer> innovations;
   private Random rng;
@@ -11,14 +12,16 @@ class Population {
   private static final float CROSSOVER_RATE = 0.75f;
   private static final float COMPATIBILITY_DISTANCE_THRESHOLD = 3.0f;
 
-  public Population(int populationCount, int inputCount, int outputCount) {
+  public Population(int populationCount, int inputCount, int outputCount, State state) {
     this.POPULATION_COUNT = populationCount;
+    this.states = new State[POPULATION_COUNT];
     this.genomes = new Genome[POPULATION_COUNT];
     this.innovations = new Hashtable<>();
     this.rng = new Random();
 
     for (int i = 0; i < POPULATION_COUNT; i++) {
       genomes[i] = new Genome(inputCount, outputCount, innovations);
+      states[i] = state.reset().deepCopy();
     }
   }
 
