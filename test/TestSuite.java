@@ -1,13 +1,13 @@
 import org.junit.Test;
 
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import static org.junit.Assert.*;
 
 public class TestSuite {
   private static Random rng = new Random();
+  private static BlankState blankState = new BlankState();
 
   // Arbitrary input and output counts for testing.
   private static final int INPUT_COUNT = 10;
@@ -22,7 +22,7 @@ public class TestSuite {
     int inputCount = rng.nextInt(20) + 1;
     int outputCount = rng.nextInt(20) + 1;
 
-    Genome genome = new Genome(inputCount, outputCount, innovations);
+    Genome genome = new Genome(inputCount, outputCount, blankState, innovations);
 
     int connectionGeneLength = inputCount * outputCount;
 
@@ -48,7 +48,7 @@ public class TestSuite {
     int inputCount = rng.nextInt(20) + 1;
     int outputCount = rng.nextInt(20) + 1;
     // Genome isn't used, but updates innovations map.
-    Genome genome = new Genome(inputCount, outputCount, innovations);
+    Genome genome = new Genome(inputCount, outputCount, blankState, innovations);
 
     assertEquals(innovations.size(), inputCount * outputCount);
 
@@ -65,7 +65,7 @@ public class TestSuite {
     Map<ConnectionGene, Integer> innovations = new Hashtable<>();
 
     // Seed of 5 results in a node being 'randomly' added.
-    Genome genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, new Random(5), innovations);
+    Genome genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, blankState, new Random(5), innovations);
     genome.mutateAddNode(innovations);
 
     assertEquals(INPUT_COUNT + OUTPUT_COUNT + 1, genome.nodeCount());
@@ -88,7 +88,7 @@ public class TestSuite {
     Map<ConnectionGene, Integer> innovations = new Hashtable<>();
 
     // Seed of 5 results in a connection being 'randomly' added.
-    Genome genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, new Random(5), innovations);
+    Genome genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, blankState, new Random(5), innovations);
     genome.mutateAddConnection(innovations);
 
     // There are no free connections initially, so none should be added.
@@ -97,7 +97,7 @@ public class TestSuite {
 
     innovations = new Hashtable<>();
     // Seed of 503 results in a connection and node being 'randomly' added.
-    genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, new Random (503), innovations);
+    genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, blankState, new Random (503), innovations);
     genome.mutateAddNode(innovations);
     genome.mutateAddConnection(innovations);
 
@@ -118,7 +118,7 @@ public class TestSuite {
     Map<ConnectionGene, Integer> innovations = new Hashtable<>();
 
     // Seed of 5 results in weights being mutated.
-    Genome genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, new Random(5), innovations);
+    Genome genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, blankState, new Random(5), innovations);
 
     float[] weights = new float[genome.connectionCount()];
 

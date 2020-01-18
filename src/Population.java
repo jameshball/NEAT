@@ -1,7 +1,6 @@
 import java.util.*;
 
 class Population {
-  private State[] states;
   private Genome[] genomes;
   private Map<ConnectionGene, Integer> innovations;
   private Random rng;
@@ -14,18 +13,16 @@ class Population {
 
   public Population(int populationCount, int inputCount, int outputCount, State state) {
     this.POPULATION_COUNT = populationCount;
-    this.states = new State[POPULATION_COUNT];
     this.genomes = new Genome[POPULATION_COUNT];
     this.innovations = new Hashtable<>();
     this.rng = new Random();
 
     for (int i = 0; i < POPULATION_COUNT; i++) {
-      genomes[i] = new Genome(inputCount, outputCount, innovations);
-      states[i] = state.reset().deepCopy();
+      genomes[i] = new Genome(inputCount, outputCount, state, innovations);
     }
   }
 
-  private Genome crossover(Genome parent1, Genome parent2, State state) {
+  private Genome crossover(Genome parent1, Genome parent2) {
     assert parent1.INPUT_COUNT == parent2.INPUT_COUNT;
     assert parent1.OUTPUT_COUNT == parent2.OUTPUT_COUNT;
 
@@ -75,12 +72,12 @@ class Population {
 
     // Since we have removed all matching connections, this adds the disjoint
     // and excess connections.
-    if (parent1.evaluateFitness(state) > parent2.evaluateFitness(state)) {
+    if (parent1.evaluateFitness() > parent2.evaluateFitness()) {
       childConns.addAll(parent1Conns);
-      return new Genome(inputCount, outputCount, childConns, parent1.getNodes());
+      return new Genome(inputCount, outputCount, childConns, parent1);
     } else {
       childConns.addAll(parent2Conns);
-      return new Genome(inputCount, outputCount, childConns, parent2.getNodes());
+      return new Genome(inputCount, outputCount, childConns, parent2);
     }
   }
 
@@ -109,8 +106,8 @@ class Population {
     genome.setSpecies(maxSpecies + 1);
   }
 
-  private float adjustedFitness(Genome genome, State state) {
-    return genome.evaluateFitness(state) / speciesSize(genome);
+  private float adjustedFitness(Genome genome) {
+    return genome.evaluateFitness() / speciesSize(genome);
   }
 
   private int speciesSize(Genome genome1) {

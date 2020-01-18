@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Random;
 
 class Genome {
+  private State state;
   private List<NodeType> nodes;
   private List<Connection> connections;
   private Random rng;
@@ -24,9 +25,10 @@ class Genome {
   public final int INPUT_COUNT;
   public final int OUTPUT_COUNT;
 
-  public Genome(int inputCount, int outputCount, Random rng, Map<ConnectionGene, Integer> innovations) {
+  public Genome(int inputCount, int outputCount, State state, Random rng, Map<ConnectionGene, Integer> innovations) {
     this.INPUT_COUNT = inputCount;
     this.OUTPUT_COUNT = outputCount;
+    this.state = state.reset().deepCopy();
     this.nodes = new ArrayList<>();
     this.connections = new ArrayList<>();
     this.rng = rng;
@@ -35,18 +37,19 @@ class Genome {
     initialiseGenome(innovations);
   }
 
-  public Genome(int inputCount, int outputCount, List<Connection> connections, List<NodeType> nodes) {
+  public Genome(int inputCount, int outputCount, List<Connection> connections, Genome parent) {
     this.INPUT_COUNT = inputCount;
     this.OUTPUT_COUNT = outputCount;
+    this.state = parent.getState().reset().deepCopy();
     this.connections = connections;
-    this.nodes = nodes;
+    this.nodes = parent.getNodes();
     this.rng = new Random();
 
     setSpecies(DEFAULT_SPECIES);
   }
 
-  public Genome(int inputCount, int outputCount, Map<ConnectionGene, Integer> innovations) {
-    this(inputCount, outputCount, new Random(), innovations);
+  public Genome(int inputCount, int outputCount, State state, Map<ConnectionGene, Integer> innovations) {
+    this(inputCount, outputCount, state, new Random(), innovations);
   }
 
   public float[] activate(float[] inputs) {
@@ -160,7 +163,7 @@ class Genome {
     return max;
   }
 
-  public float evaluateFitness(State state) {
+  public float evaluateFitness() {
     return state.evaluateFitness();
   }
 
@@ -321,5 +324,9 @@ class Genome {
 
   public void setSpecies(int species) {
     this.species = species;
+  }
+
+  public State getState() {
+    return state;
   }
 }
