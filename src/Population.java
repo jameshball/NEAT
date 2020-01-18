@@ -8,6 +8,7 @@ class Population {
   private final int POPULATION_COUNT;
 
   private static final float INHERITED_GENE_DISABLED_RATE = 0.75f;
+  private static final float CROSSOVER_RATE = 0.75f;
 
   public Population(int populationCount, int inputCount, int outputCount) {
     this.POPULATION_COUNT = populationCount;
@@ -19,8 +20,6 @@ class Population {
       genomes[i] = new Genome(inputCount, outputCount, innovations);
     }
   }
-
-  // TODO: Implement end-of-generational functions.
 
   private Genome crossover(Genome parent1, Genome parent2, State state) {
     assert parent1.INPUT_COUNT == parent2.INPUT_COUNT;
@@ -81,12 +80,20 @@ class Population {
     }
   }
 
-  private Genome getFittestParent(Genome parent1, Genome parent2, State state) {
-    if (parent1.evaluateFitness(state) > parent2.evaluateFitness(state)) {
-      return parent1;
+  private float adjustedFitness(Genome genome, State state) {
+    return genome.evaluateFitness(state) / speciesSize(genome);
+  }
+
+  private int speciesSize(Genome genome1) {
+    int speciesSize = 0;
+
+    for (Genome genome2 : genomes) {
+      if (genome1.getSpecies() == genome2.getSpecies()) {
+        speciesSize++;
+      }
     }
 
-    return parent2;
+    return speciesSize;
   }
 
   public static void addInnovation(ConnectionGene gene, Map<ConnectionGene, Integer> innovations) {
