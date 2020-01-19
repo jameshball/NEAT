@@ -63,7 +63,8 @@ class Genome {
     float[] prevNodeValues = new float[nodeCount()];
 
     for (int i = 0; i < INPUT_COUNT; i++) {
-      nodeValues[i] = sigmoid(inputs[i]);
+      // sigmoid is not applied to input nodes.
+      nodeValues[i] = inputs[i];
     }
 
     do {
