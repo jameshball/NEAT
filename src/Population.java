@@ -24,6 +24,7 @@ class Population {
     this.rng = new Random();
 
     species.add(new Species(GENERATION_NUMBER));
+    species.get(0).setSize(POPULATION_COUNT);
 
     for (int i = 0; i < POPULATION_COUNT; i++) {
       genomes[i] = new Genome(inputCount, outputCount, state, innovations);
@@ -33,15 +34,23 @@ class Population {
   // TODO: Ensure this class is idiomatic and efficient.
 
   public void update() {
-    Arrays.stream(genomes).parallel().forEach(Genome::updateState);
+    //Arrays.stream(genomes).parallel().forEach(Genome::updateState);
+    Arrays.stream(genomes).forEach(Genome::updateState);
 
+    if (allEnded()) {
+      System.out.println(fitnessSum() / POPULATION_COUNT);
+      nextGeneration();
+    }
+  }
+
+  public boolean allEnded() {
     for (Genome genome : genomes) {
       if (!genome.hasEnded()) {
-        return;
+        return false;
       }
     }
 
-    nextGeneration();
+    return true;
   }
 
   private void nextGeneration() {
@@ -57,6 +66,8 @@ class Population {
         assert parent1 != null && parent2 != null;
 
         newGenomes[i] = crossover(parent1, parent2);
+      } else {
+        newGenomes[i] = genomes[i];
       }
 
       newGenomes[i].mutate(innovations);
@@ -81,7 +92,7 @@ class Population {
 
     for (int i = 0; i < POPULATION_COUNT; i++) {
       if (interspeciesMating || genomes[i].getSpecies() == genome.getSpecies()) {
-        total += genome.getFitness();
+        total += genomes[i].getFitness();
       }
 
       if (total >= randomFitnessTotal) {
@@ -112,7 +123,7 @@ class Population {
     }
   }
 
-  private float fitnessSum() {
+  public float fitnessSum() {
     float total = 0;
 
     for (Genome genome : genomes) {
@@ -122,7 +133,7 @@ class Population {
     return total;
   }
 
-  private float fitnessSum(int species) {
+  public float fitnessSum(int species) {
     float total = 0;
 
     for (Genome genome : genomes) {

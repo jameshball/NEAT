@@ -65,17 +65,19 @@ class Genome {
     float[] nodeValues = new float[nodeCount()];
     float[] prevNodeValues = new float[nodeCount()];
 
-    for (int i = 0; i < INPUT_COUNT; i++) {
-      // sigmoid is not applied to input nodes.
+    for (int i = 0; i < inputs.length; i++) {
       nodeValues[i] = inputs[i];
+      prevNodeValues[i] = inputs[i];
     }
 
     do {
       for (int i = INPUT_COUNT; i < nodeCount(); i++) {
-        prevNodeValues[i] = sigmoid(nodeValues[i]);
+        prevNodeValues[i] = nodeValues[i];
       }
 
       for (int i = INPUT_COUNT; i < nodeCount(); i++) {
+        nodeValues[i] = 0;
+
         for (Connection connection : connections) {
           if (connection.getOut() == i) {
             nodeValues[i] += prevNodeValues[connection.getIn()] * connection.getWeight();
@@ -87,7 +89,7 @@ class Genome {
     float[] outputs = new float[OUTPUT_COUNT];
 
     for (int i = INPUT_COUNT; i < INPUT_COUNT + OUTPUT_COUNT; i++) {
-      outputs[i] = nodeValues[i];
+      outputs[i - INPUT_COUNT] = sigmoid(nodeValues[i]);
     }
 
     return outputs;
@@ -104,7 +106,9 @@ class Genome {
     float totalRelDiff = 0;
 
     for (int i = INPUT_COUNT; i < nodeValues.length; i++) {
-      totalRelDiff += Math.abs((nodeValues[i] - prevNodeValues[i]) / prevNodeValues[i]);
+      if (nodeValues[i] != prevNodeValues[i]) {
+        totalRelDiff += Math.abs((nodeValues[i] - prevNodeValues[i]) / prevNodeValues[i]);
+      }
     }
 
     return totalRelDiff < ACTIVATION_STABILISATION_THRESHOLD;

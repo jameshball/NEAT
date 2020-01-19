@@ -30,6 +30,10 @@ public class Species {
     size--;
   }
 
+  public void setSize(int size) {
+    this.size = size;
+  }
+
   public int size() {
     return size;
   }
