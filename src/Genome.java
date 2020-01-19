@@ -44,9 +44,11 @@ class Genome {
     this.OUTPUT_COUNT = outputCount;
     this.state = parent.getState().reset().deepCopy();
     this.connections = connections;
-    this.nodes = parent.getNodes();
+    this.nodes = new ArrayList<>();
     this.rng = new Random();
     this.fitness = 0;
+
+    nodes.addAll(parent.getNodes());
 
     setSpecies(DEFAULT_SPECIES);
   }
@@ -79,7 +81,7 @@ class Genome {
         nodeValues[i] = 0;
 
         for (Connection connection : connections) {
-          if (connection.getOut() == i) {
+          if (!connection.isDisabled() && connection.getOut() == i) {
             nodeValues[i] += prevNodeValues[connection.getIn()] * connection.getWeight();
           }
         }
