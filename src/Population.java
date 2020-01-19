@@ -39,11 +39,41 @@ class Population {
 
   }
 
-  private Genome selectParent(Genome genome) {
+  // This never explicitly chooses a parent from another species, there is just
+  // a chance that a parent is selected from the whole population, instead of
+  // one species.
+  private Genome getParent(Genome genome) {
+    boolean interspeciesMating = rng.nextFloat() < INTERSPECIES_MATING_RATE;
 
+    List<Float> popFitness = interspeciesMating ? popFitness() : popFitness(genome.getSpecies());
+
+    float randomFitnessTotal = rng.nextFloat() * sum(popFitness);
+    float total = 0;
+
+    for (int i = 0; i < POPULATION_COUNT; i++) {
+      if (interspeciesMating || genomes[i].getSpecies() == genome.getSpecies()) {
+        total += popFitness.get(i);
+      }
+
+      if (total >= randomFitnessTotal) {
+        return genomes[i];
+      }
+    }
+
+    return null;
   }
 
-  private List<Float> populationFitness() {
+  private float sum(List<Float> input) {
+    float total = 0;
+
+    for (Float x : input) {
+      total += x;
+    }
+
+    return total;
+  }
+
+  private List<Float> popFitness() {
     List<Float> fitness = new ArrayList<>();
 
     for (int i = 0; i < POPULATION_COUNT; i++) {
@@ -53,7 +83,7 @@ class Population {
     return fitness;
   }
 
-  private List<Float> populationFitness(int species) {
+  private List<Float> popFitness(int species) {
     List<Float> fitness = new ArrayList<>();
 
     for (int i = 0; i < POPULATION_COUNT; i++) {
@@ -97,7 +127,7 @@ class Population {
           }
 
           // Randomly choose a parent
-          if (rng.nextFloat() < 0.5) {
+          if (rng.nextBoolean()) {
             childConns.add(connection1);
           } else {
             childConns.add(connection2);
