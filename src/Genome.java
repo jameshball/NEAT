@@ -171,6 +171,12 @@ class Genome {
     return state.evaluateFitness();
   }
 
+  public void mutate(Map<ConnectionGene, Integer> innovations) {
+    mutateAddNode(innovations);
+    mutateAddConnection(innovations);
+    mutateWeights();
+  }
+
   public void mutateWeights() {
     if (rng.nextFloat() < WEIGHT_MUTATION_RATE) {
       for (Connection connection : connections) {

@@ -5,6 +5,8 @@ class Population {
   private Map<ConnectionGene, Integer> innovations;
   private Random rng;
 
+  public static int GENERATION_NUMBER;
+
   private final int POPULATION_COUNT;
 
   private static final float INHERITED_GENE_DISABLED_RATE = 0.75f;
@@ -21,6 +23,8 @@ class Population {
     for (int i = 0; i < POPULATION_COUNT; i++) {
       genomes[i] = new Genome(inputCount, outputCount, state, innovations);
     }
+
+    GENERATION_NUMBER = 0;
   }
 
   public void update() {
@@ -36,7 +40,24 @@ class Population {
   }
 
   private void nextGeneration() {
+    Genome[] newGenomes = new Genome[POPULATION_COUNT];
 
+    for (int i = 0; i < POPULATION_COUNT; i++) {
+      if (rng.nextFloat() < CROSSOVER_RATE) {
+        Genome parent1 = getParent(genomes[i]);
+        Genome parent2 = getParent(genomes[i]);
+
+        assert parent1 != null && parent2 != null;
+
+        newGenomes[i] = crossover(parent1, parent2);
+      }
+
+      newGenomes[i].mutate(innovations);
+      placeInSpecies(newGenomes[i]);
+    }
+
+    genomes = newGenomes;
+    GENERATION_NUMBER++;
   }
 
   // This never explicitly chooses a parent from another species, there is just
