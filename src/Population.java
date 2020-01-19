@@ -9,6 +9,7 @@ class Population {
 
   private static final float INHERITED_GENE_DISABLED_RATE = 0.75f;
   private static final float CROSSOVER_RATE = 0.75f;
+  private static final float INTERSPECIES_MATING_RATE = 0.001f;
   private static final float COMPATIBILITY_DISTANCE_THRESHOLD = 3.0f;
 
   public Population(int populationCount, int inputCount, int outputCount, State state) {
@@ -20,6 +21,48 @@ class Population {
     for (int i = 0; i < POPULATION_COUNT; i++) {
       genomes[i] = new Genome(inputCount, outputCount, state, innovations);
     }
+  }
+
+  public void update() {
+    Arrays.stream(genomes).parallel().forEach(Genome::updateState);
+
+    for (Genome genome : genomes) {
+      if (!genome.hasEnded()) {
+        return;
+      }
+    }
+
+    nextGeneration();
+  }
+
+  private void nextGeneration() {
+
+  }
+
+  private Genome selectParent(Genome genome) {
+
+  }
+
+  private List<Float> populationFitness() {
+    List<Float> fitness = new ArrayList<>();
+
+    for (int i = 0; i < POPULATION_COUNT; i++) {
+      fitness.add(adjustedFitness(genomes[i]));
+    }
+
+    return fitness;
+  }
+
+  private List<Float> populationFitness(int species) {
+    List<Float> fitness = new ArrayList<>();
+
+    for (int i = 0; i < POPULATION_COUNT; i++) {
+      if (genomes[i].getSpecies() == species) {
+        fitness.add(adjustedFitness(genomes[i]));
+      }
+    }
+
+    return fitness;
   }
 
   private Genome crossover(Genome parent1, Genome parent2) {

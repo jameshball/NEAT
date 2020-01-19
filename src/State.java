@@ -1,7 +1,7 @@
 public interface State {
   float evaluateFitness();
   void update(float[] inputs);
-  float[] generateGenomeInputs();
+  float[] getGenomeInputs();
   boolean hasEnded();
   State reset();
   State deepCopy();

@@ -11,7 +11,7 @@ public class BlankState implements State {
   }
 
   @Override
-  public float[] generateGenomeInputs() {
+  public float[] getGenomeInputs() {
     return new float[0];
   }
 

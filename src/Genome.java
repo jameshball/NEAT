@@ -52,7 +52,11 @@ class Genome {
     this(inputCount, outputCount, state, new Random(), innovations);
   }
 
-  public float[] activate(float[] inputs) {
+  public void updateState() {
+    state.update(activate(state.getGenomeInputs()));
+  }
+
+  private float[] activate(float[] inputs) {
     assert inputs.length == INPUT_COUNT;
 
     float[] nodeValues = new float[nodeCount()];
@@ -326,7 +330,11 @@ class Genome {
     this.species = species;
   }
 
-  public State getState() {
+  private State getState() {
     return state;
+  }
+
+  public boolean hasEnded() {
+    return state.hasEnded();
   }
 }
