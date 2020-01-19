@@ -3,6 +3,7 @@ import java.util.*;
 class Population {
   private Genome[] genomes;
   private Map<ConnectionGene, Integer> innovations;
+  private List<Species> species;
   private Random rng;
 
   public static int GENERATION_NUMBER;
@@ -15,16 +16,19 @@ class Population {
   private static final float COMPATIBILITY_DISTANCE_THRESHOLD = 3.0f;
 
   public Population(int populationCount, int inputCount, int outputCount, State state) {
+    this.GENERATION_NUMBER = 0;
     this.POPULATION_COUNT = populationCount;
     this.genomes = new Genome[POPULATION_COUNT];
     this.innovations = new Hashtable<>();
+    this.species = new ArrayList<>();
     this.rng = new Random();
+
+    species.add(new Species(GENERATION_NUMBER));
 
     for (int i = 0; i < POPULATION_COUNT; i++) {
       genomes[i] = new Genome(inputCount, outputCount, state, innovations);
     }
 
-    GENERATION_NUMBER = 0;
   }
 
   public void update() {
@@ -41,6 +45,8 @@ class Population {
 
   private void nextGeneration() {
     Genome[] newGenomes = new Genome[POPULATION_COUNT];
+
+    evaluateFitness();
 
     for (int i = 0; i < POPULATION_COUNT; i++) {
       if (rng.nextFloat() < CROSSOVER_RATE) {
@@ -63,17 +69,18 @@ class Population {
   // This never explicitly chooses a parent from another species, there is just
   // a chance that a parent is selected from the whole population, instead of
   // one species.
+  // TODO: Make more efficient (repeated calls to fitnessSum()).
   private Genome getParent(Genome genome) {
     boolean interspeciesMating = rng.nextFloat() < INTERSPECIES_MATING_RATE;
 
-    List<Float> popFitness = interspeciesMating ? popFitness() : popFitness(genome.getSpecies());
+    float fitnessSum = interspeciesMating ? fitnessSum() : fitnessSum(genome.getSpecies());
 
-    float randomFitnessTotal = rng.nextFloat() * sum(popFitness);
+    float randomFitnessTotal = rng.nextFloat() * fitnessSum;
     float total = 0;
 
     for (int i = 0; i < POPULATION_COUNT; i++) {
       if (interspeciesMating || genomes[i].getSpecies() == genome.getSpecies()) {
-        total += popFitness.get(i);
+        total += genome.getFitness();
       }
 
       if (total >= randomFitnessTotal) {
@@ -84,36 +91,58 @@ class Population {
     return null;
   }
 
-  private float sum(List<Float> input) {
+  private void evaluateFitness() {
+    float[] bestFitness = new float[species.size()];
+
+    for (Genome genome : genomes) {
+      if (species.get(genome.getSpecies()).isStagnant(GENERATION_NUMBER)) {
+        genome.setFitness(0);
+      } else {
+        genome.setFitness(genome.evaluateFitness() / species.get(genome.getSpecies()).size());
+
+        if (genome.getFitness() > bestFitness[genome.getSpecies()]) {
+          bestFitness[genome.getSpecies()] = genome.getFitness();
+        }
+      }
+    }
+
+    for (int i = 0; i < species.size(); i++) {
+      species.get(i).bestFitnessInSpecies(bestFitness[i], GENERATION_NUMBER);
+    }
+  }
+
+  private float fitnessSum() {
     float total = 0;
 
-    for (Float x : input) {
-      total += x;
+    for (Genome genome : genomes) {
+      total += genome.getFitness();
     }
 
     return total;
   }
 
-  private List<Float> popFitness() {
-    List<Float> fitness = new ArrayList<>();
+  private float fitnessSum(int species) {
+    float total = 0;
 
-    for (int i = 0; i < POPULATION_COUNT; i++) {
-      fitness.add(adjustedFitness(genomes[i]));
-    }
-
-    return fitness;
-  }
-
-  private List<Float> popFitness(int species) {
-    List<Float> fitness = new ArrayList<>();
-
-    for (int i = 0; i < POPULATION_COUNT; i++) {
-      if (genomes[i].getSpecies() == species) {
-        fitness.add(adjustedFitness(genomes[i]));
+    for (Genome genome : genomes) {
+      if (genome.getSpecies() == species) {
+        total += genome.getFitness();
       }
     }
 
-    return fitness;
+    return total;
+  }
+
+  private float maxSpeciesFitness(int species) {
+    float maxFitness = 0;
+
+    for (Genome genome : genomes) {
+      if (genome.getSpecies() == species) {
+        maxFitness = Math.max(maxFitness, genome.getFitness());
+      }
+    }
+
+    return maxFitness;
   }
 
   private Genome crossover(Genome parent1, Genome parent2) {
@@ -181,39 +210,33 @@ class Population {
     int maxSpecies = 0;
 
     for (Genome rep : genomes) {
-      int species = rep.getSpecies();
+      int currentSpecies = rep.getSpecies();
 
-      if (!seenSpecies.contains(species)) {
+      if (!seenSpecies.contains(currentSpecies)) {
         if (genome.compatibilityDistance(rep, innovations) < COMPATIBILITY_DISTANCE_THRESHOLD) {
-          genome.setSpecies(species);
+          setSpecies(genome, currentSpecies);
           return;
         } else {
-          seenSpecies.add(species);
+          seenSpecies.add(currentSpecies);
         }
       }
 
-      if (species > maxSpecies) {
-        maxSpecies = species;
+      if (currentSpecies > maxSpecies) {
+        maxSpecies = currentSpecies;
       }
     }
 
-    genome.setSpecies(maxSpecies + 1);
+    setSpecies(genome, maxSpecies + 1);
   }
 
-  private float adjustedFitness(Genome genome) {
-    return genome.evaluateFitness() / speciesSize(genome);
-  }
-
-  private int speciesSize(Genome genome1) {
-    int speciesSize = 0;
-
-    for (Genome genome2 : genomes) {
-      if (genome1.getSpecies() == genome2.getSpecies()) {
-        speciesSize++;
-      }
+  private void setSpecies(Genome genome, int newSpecies) {
+    if (newSpecies >= species.size()) {
+      species.add(new Species(GENERATION_NUMBER));
     }
 
-    return speciesSize;
+    species.get(genome.getSpecies()).remove();
+    genome.setSpecies(newSpecies);
+    species.get(newSpecies).add();
   }
 
   public static void addInnovation(ConnectionGene gene, Map<ConnectionGene, Integer> innovations) {

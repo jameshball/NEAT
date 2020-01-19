@@ -9,6 +9,7 @@ class Genome {
   private List<Connection> connections;
   private Random rng;
   private int species;
+  private float fitness;
 
   private static final int DEFAULT_SPECIES = 0;
   private static final float EXCESS_COEFFICIENT = 1.0f;
@@ -32,6 +33,7 @@ class Genome {
     this.nodes = new ArrayList<>();
     this.connections = new ArrayList<>();
     this.rng = rng;
+    this.fitness = 0;
 
     setSpecies(DEFAULT_SPECIES);
     initialiseGenome(innovations);
@@ -44,6 +46,7 @@ class Genome {
     this.connections = connections;
     this.nodes = parent.getNodes();
     this.rng = new Random();
+    this.fitness = 0;
 
     setSpecies(DEFAULT_SPECIES);
   }
@@ -343,5 +346,13 @@ class Genome {
 
   public boolean hasEnded() {
     return state.hasEnded();
+  }
+
+  public float getFitness() {
+    return fitness;
+  }
+
+  public void setFitness(float fitness) {
+    this.fitness = fitness;
   }
 }
