@@ -16,7 +16,7 @@ class Genome {
   private static final float DISJOINT_COEFFICIENT = 1.0f;
   private static final float WEIGHT_DIFF_COEFFICIENT = 0.4f;
   private static final float WEIGHT_MUTATION_RATE = 0.8f;
-  private static final float UNIFORM_PERTURBATION_RATE = 0.9f;
+  private static final float UNIFORM_PERTURBATION_RATE = 1f;
   private static final float ADD_NEW_NODE_RATE = 0.03f;
   private static final float ADD_NEW_CONNECTION_RATE = 0.05f;
   private static final float SIGMOID_CONSTANT = 4.9f;

@@ -153,9 +153,6 @@ class Population {
     int outputCount = parent1.OUTPUT_COUNT;
 
     List<Connection> childConns = new ArrayList<>();
-
-    int maxNode = 0;
-
     List<Connection> parent1Conns = parent1.getConnections();
     List<Connection> parent2Conns = parent2.getConnections();
 
@@ -181,10 +178,6 @@ class Population {
             childConns.add(connection1);
           } else {
             childConns.add(connection2);
-          }
-
-          if (connection1.getOut() > maxNode) {
-            maxNode = connection1.getOut();
           }
 
           parent1Conns.remove(i);

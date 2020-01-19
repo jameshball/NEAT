@@ -1,5 +1,7 @@
+import java.util.Random;
+
 class NEATClient {
-  static int populationSize = 150;
+  static int populationSize = 500;
   static int gridX = 40;
   static int gridY = 40;
   static int[] allowedMoves = new int[gridX * gridY + 1];
