@@ -28,8 +28,9 @@ class Population {
     for (int i = 0; i < POPULATION_COUNT; i++) {
       genomes[i] = new Genome(inputCount, outputCount, state, innovations);
     }
-
   }
+
+  // TODO: Ensure this class is idiomatic and efficient.
 
   public void update() {
     Arrays.stream(genomes).parallel().forEach(Genome::updateState);
@@ -131,18 +132,6 @@ class Population {
     }
 
     return total;
-  }
-
-  private float maxSpeciesFitness(int species) {
-    float maxFitness = 0;
-
-    for (Genome genome : genomes) {
-      if (genome.getSpecies() == species) {
-        maxFitness = Math.max(maxFitness, genome.getFitness());
-      }
-    }
-
-    return maxFitness;
   }
 
   private Genome crossover(Genome parent1, Genome parent2) {
