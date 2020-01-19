@@ -34,8 +34,7 @@ class Population {
   // TODO: Ensure this class is idiomatic and efficient.
 
   public void update() {
-    //Arrays.stream(genomes).parallel().forEach(Genome::updateState);
-    Arrays.stream(genomes).forEach(Genome::updateState);
+    Arrays.stream(genomes).parallel().forEach(Genome::updateState);
 
     if (allEnded()) {
       System.out.println(fitnessSum() / POPULATION_COUNT);
@@ -107,10 +106,11 @@ class Population {
     float[] bestFitness = new float[species.size()];
 
     for (Genome genome : genomes) {
-      if (species.get(genome.getSpecies()).isStagnant(GENERATION_NUMBER)) {
+      if (species.size() > 1 && species.get(genome.getSpecies()).isStagnant(GENERATION_NUMBER)) {
         genome.setFitness(0);
       } else {
-        genome.setFitness(genome.evaluateFitness() / species.get(genome.getSpecies()).size());
+        genome.setFitness(genome.evaluateFitness());
+        //genome.setFitness(genome.evaluateFitness() / species.get(genome.getSpecies()).size());
 
         if (genome.getFitness() > bestFitness[genome.getSpecies()]) {
           bestFitness[genome.getSpecies()] = genome.getFitness();

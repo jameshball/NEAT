@@ -85,13 +85,15 @@ class Genome {
             nodeValues[i] += prevNodeValues[connection.getIn()] * connection.getWeight();
           }
         }
+
+        nodeValues[i] = sigmoid(nodeValues[i]);
       }
     } while (!isStabilised(nodeValues, prevNodeValues));
 
     float[] outputs = new float[OUTPUT_COUNT];
 
     for (int i = INPUT_COUNT; i < INPUT_COUNT + OUTPUT_COUNT; i++) {
-      outputs[i - INPUT_COUNT] = sigmoid(nodeValues[i]);
+      outputs[i - INPUT_COUNT] = nodeValues[i];
     }
 
     return outputs;
@@ -236,11 +238,13 @@ class Genome {
 
     for (int i = 0; i < nodes.size(); i++) {
       for (int j = 0; j < nodes.size(); j++) {
-        ConnectionGene gene = new ConnectionGene(i, j);
+        if (i != j) {
+          ConnectionGene gene = new ConnectionGene(i, j);
 
-        if (getNode(i) != NodeType.OUTPUT && getNode(j) != NodeType.INPUT) {
-          if (!containsConnectionGene(gene)) {
-            genes.add(gene);
+          if (getNode(i) != NodeType.OUTPUT && getNode(j) != NodeType.INPUT) {
+            if (!containsConnectionGene(gene)) {
+              genes.add(gene);
+            }
           }
         }
       }
