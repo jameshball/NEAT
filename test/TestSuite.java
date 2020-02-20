@@ -17,12 +17,12 @@ public class TestSuite {
 
   @Test
   public void genomeInitialises() {
-    Map<ConnectionGene, Integer> innovations = new Hashtable<>();
-
     int inputCount = rng.nextInt(20) + 1;
     int outputCount = rng.nextInt(20) + 1;
 
-    Genome genome = new Genome(inputCount, outputCount, blankState, innovations);
+    Population population = new Population(0, inputCount, outputCount, new BlankState());
+
+    Genome genome = new Genome(inputCount, outputCount, blankState, population);
 
     int connectionGeneLength = inputCount * outputCount;
 
@@ -43,30 +43,30 @@ public class TestSuite {
 
   @Test
   public void testInnovations() {
-    Map<ConnectionGene, Integer> innovations = new Hashtable<>();
-
     int inputCount = rng.nextInt(20) + 1;
     int outputCount = rng.nextInt(20) + 1;
-    // Genome isn't used, but updates innovations map.
-    Genome genome = new Genome(inputCount, outputCount, blankState, innovations);
 
-    assertEquals(innovations.size(), inputCount * outputCount);
+    Population population = new Population(0, inputCount, outputCount, new BlankState());
+
+    Genome genome = new Genome(inputCount, outputCount, blankState, population);
+
+    assertEquals(population.innovationsSize(), inputCount * outputCount);
 
     ConnectionGene dummyGene = new ConnectionGene(Integer.MAX_VALUE, 0);
 
-    Population.addInnovation(dummyGene, innovations);
-    assertEquals(inputCount * outputCount + 1, innovations.size());
-    Population.addInnovation(dummyGene, innovations);
-    assertEquals(inputCount * outputCount + 1, innovations.size());
+    population.addInnovation(dummyGene);
+    assertEquals(inputCount * outputCount + 1, population.innovationsSize());
+    population.addInnovation(dummyGene);
+    assertEquals(inputCount * outputCount + 1, population.innovationsSize());
   }
 
   @Test
   public void testAddNodeMutation() {
-    Map<ConnectionGene, Integer> innovations = new Hashtable<>();
+    Population population = new Population(0, INPUT_COUNT, OUTPUT_COUNT, new BlankState());
 
     // Seed of 5 results in a node being 'randomly' added.
-    Genome genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, blankState, new Random(5), innovations);
-    genome.mutateAddNode(innovations);
+    Genome genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, blankState, new Random(5), population);
+    genome.mutateAddNode();
 
     assertEquals(INPUT_COUNT + OUTPUT_COUNT + 1, genome.nodeCount());
     assertEquals(INPUT_COUNT * OUTPUT_COUNT + 2, genome.connectionCount());
@@ -85,40 +85,39 @@ public class TestSuite {
 
   @Test
   public void testAddConnectionMutation() {
-    Map<ConnectionGene, Integer> innovations = new Hashtable<>();
+    Population population = new Population(0, INPUT_COUNT, OUTPUT_COUNT, new BlankState());
 
     // Seed of 5 results in a connection being 'randomly' added.
-    Genome genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, blankState, new Random(5), innovations);
-    genome.mutateAddConnection(innovations);
+    Genome genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, blankState, new Random(5), population);
+    genome.mutateAddConnection();
 
     // There are no free connections initially, so none should be added.
     assertEquals(INPUT_COUNT * OUTPUT_COUNT, genome.connectionCount());
-    assertEquals(INPUT_COUNT * OUTPUT_COUNT, innovations.size());
+    assertEquals(INPUT_COUNT * OUTPUT_COUNT, population.innovationsSize());
 
-    innovations = new Hashtable<>();
+    population = new Population(0, INPUT_COUNT, OUTPUT_COUNT, new BlankState());
     // Seed of 503 results in a connection and node being 'randomly' added.
-    genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, blankState, new Random (503), innovations);
-    genome.mutateAddNode(innovations);
-    genome.mutateAddConnection(innovations);
+    genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, blankState, new Random (503), population);
+    genome.mutateAddNode();
+    genome.mutateAddConnection();
 
-    assertEquals(INPUT_COUNT * OUTPUT_COUNT + 3, innovations.size());
+    assertEquals(INPUT_COUNT * OUTPUT_COUNT + 3, population.innovationsSize());
 
     int in = genome.getConnection(genome.connectionCount() - 1).getIn();
     int out = genome.getConnection(genome.connectionCount() - 1).getOut();
 
     assertNotEquals(NodeType.OUTPUT, genome.getNode(in));
     assertNotEquals(NodeType.INPUT, genome.getNode(out));
-    assertTrue(innovations.containsKey(new ConnectionGene(in, out)));
     assertTrue(genome.getNode(in).equals(NodeType.HIDDEN)
             || genome.getNode(out).equals(NodeType.HIDDEN));
   }
 
   @Test
   public void testWeightMutation() {
-    Map<ConnectionGene, Integer> innovations = new Hashtable<>();
+    Population population = new Population(0, INPUT_COUNT, OUTPUT_COUNT, new BlankState());
 
     // Seed of 5 results in weights being mutated.
-    Genome genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, blankState, new Random(5), innovations);
+    Genome genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, blankState, new Random(5), population);
 
     float[] weights = new float[genome.connectionCount()];
 

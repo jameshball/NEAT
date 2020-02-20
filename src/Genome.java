@@ -10,6 +10,7 @@ class Genome {
   private Random rng;
   private int species;
   private float fitness;
+  private Population population;
 
   private static final int DEFAULT_SPECIES = 0;
   private static final float EXCESS_COEFFICIENT = 1.0f;
@@ -26,7 +27,7 @@ class Genome {
   public final int INPUT_COUNT;
   public final int OUTPUT_COUNT;
 
-  public Genome(int inputCount, int outputCount, State state, Random rng, Map<ConnectionGene, Integer> innovations) {
+  public Genome(int inputCount, int outputCount, State state, Random rng, Population population) {
     this.INPUT_COUNT = inputCount;
     this.OUTPUT_COUNT = outputCount;
     this.state = state.reset().deepCopy();
@@ -34,12 +35,13 @@ class Genome {
     this.connections = new ArrayList<>();
     this.rng = rng;
     this.fitness = 0;
+    this.population = population;
 
     setSpecies(DEFAULT_SPECIES);
-    initialiseGenome(innovations);
+    initialiseGenome();
   }
 
-  public Genome(int inputCount, int outputCount, List<Connection> connections, Genome parent) {
+  public Genome(int inputCount, int outputCount, List<Connection> connections, Genome parent, Population population) {
     this.INPUT_COUNT = inputCount;
     this.OUTPUT_COUNT = outputCount;
     this.state = parent.getState().reset().deepCopy();
@@ -47,14 +49,14 @@ class Genome {
     this.nodes = new ArrayList<>();
     this.rng = new Random();
     this.fitness = 0;
+    this.population = population;
 
     nodes.addAll(parent.getNodes());
-
     setSpecies(DEFAULT_SPECIES);
   }
 
-  public Genome(int inputCount, int outputCount, State state, Map<ConnectionGene, Integer> innovations) {
-    this(inputCount, outputCount, state, new Random(), innovations);
+  public Genome(int inputCount, int outputCount, State state, Population population) {
+    this(inputCount, outputCount, state, new Random(), population);
   }
 
   public void updateState() {
@@ -183,9 +185,9 @@ class Genome {
     return state.evaluateFitness();
   }
 
-  public void mutate(Map<ConnectionGene, Integer> innovations) {
-    mutateAddNode(innovations);
-    mutateAddConnection(innovations);
+  public void mutate() {
+    mutateAddNode();
+    mutateAddConnection();
     mutateWeights();
   }
 
@@ -203,7 +205,7 @@ class Genome {
     }
   }
 
-  public void mutateAddNode(Map<ConnectionGene, Integer> innovations) {
+  public void mutateAddNode() {
     if (rng.nextFloat() < ADD_NEW_NODE_RATE) {
       int randomConnIndex = rng.nextInt(connections.size());
 
@@ -214,12 +216,12 @@ class Genome {
       ConnectionGene gene1 = new ConnectionGene(connection.getIn(), newNodeId);
       ConnectionGene gene2 = new ConnectionGene(newNodeId, connection.getOut());
 
-      addConnection(gene1, 1, innovations);
-      addConnection(gene2, connection.getWeight(), innovations);
+      addConnection(gene1, 1);
+      addConnection(gene2, connection.getWeight());
     }
   }
 
-  public void mutateAddConnection(Map<ConnectionGene, Integer> innovations) {
+  public void mutateAddConnection() {
     if (rng.nextFloat() < ADD_NEW_CONNECTION_RATE) {
       List<ConnectionGene> missingGenes = missingGenes();
 
@@ -229,7 +231,7 @@ class Genome {
 
       int randomIndex = rng.nextInt(missingGenes.size());
 
-      addConnection(missingGenes.get(randomIndex), randomWeight(), innovations);
+      addConnection(missingGenes.get(randomIndex), randomWeight());
     }
   }
 
@@ -267,7 +269,7 @@ class Genome {
     return rng.nextFloat() * 2 - 1;
   }
 
-  private void initialiseGenome(Map<ConnectionGene, Integer> innovations) {
+  private void initialiseGenome() {
     for (int i = 0; i < INPUT_COUNT; i++) {
       addNode(NodeType.INPUT);
     }
@@ -278,14 +280,13 @@ class Genome {
       for (int j = 0; j < INPUT_COUNT; j++) {
         ConnectionGene gene = new ConnectionGene(j, i);
 
-        addConnection(gene, randomWeight(), innovations);
+        addConnection(gene, randomWeight());
       }
     }
   }
 
-  private void addConnection(ConnectionGene gene, float weight,
-                             Map<ConnectionGene, Integer> innovations) {
-    Population.addInnovation(gene, innovations);
+  private void addConnection(ConnectionGene gene, float weight) {
+    population.addInnovation(gene);
     connections.add(new Connection(gene, weight));
   }
 

@@ -27,7 +27,7 @@ class Population {
     species.get(0).setSize(POPULATION_COUNT);
 
     for (int i = 0; i < POPULATION_COUNT; i++) {
-      genomes[i] = new Genome(inputCount, outputCount, state, innovations);
+      genomes[i] = new Genome(inputCount, outputCount, state, this);
     }
   }
 
@@ -69,7 +69,7 @@ class Population {
         newGenomes[i] = genomes[i];
       }
 
-      newGenomes[i].mutate(innovations);
+      newGenomes[i].mutate();
       placeInSpecies(newGenomes[i]);
     }
 
@@ -190,10 +190,10 @@ class Population {
     // and excess connections.
     if (parent1.evaluateFitness() > parent2.evaluateFitness()) {
       childConns.addAll(parent1Conns);
-      return new Genome(inputCount, outputCount, childConns, parent1);
+      return new Genome(inputCount, outputCount, childConns, parent1, this);
     } else {
       childConns.addAll(parent2Conns);
-      return new Genome(inputCount, outputCount, childConns, parent2);
+      return new Genome(inputCount, outputCount, childConns, parent2, this);
     }
   }
 
@@ -232,9 +232,13 @@ class Population {
     species.get(newSpecies).add();
   }
 
-  public static void addInnovation(ConnectionGene gene, Map<ConnectionGene, Integer> innovations) {
+  public void addInnovation(ConnectionGene gene) {
     if (!innovations.containsKey(gene)) {
       innovations.put(gene, innovations.size());
     }
+  }
+
+  public int innovationsSize() {
+    return innovations.size();
   }
 }
