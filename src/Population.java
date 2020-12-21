@@ -1,3 +1,4 @@
+import java.time.LocalDateTime;
 import java.util.*;
 
 class Population {
@@ -37,7 +38,9 @@ class Population {
     Arrays.stream(genomes).parallel().forEach(Genome::updateState);
 
     if (allEnded()) {
-      System.out.println(fitnessSum() / POPULATION_COUNT);
+      System.out.printf(
+          "Gen: %1$s\tAvg: %2$s\tTime: %3$s%n",
+          GENERATION_NUMBER, fitnessSum() / POPULATION_COUNT, LocalDateTime.now().toLocalTime());
       nextGeneration();
     }
   }
@@ -110,7 +113,7 @@ class Population {
         genome.setFitness(0);
       } else {
         genome.setFitness(genome.evaluateFitness());
-        //genome.setFitness(genome.evaluateFitness() / species.get(genome.getSpecies()).size());
+        // genome.setFitness(genome.evaluateFitness() / species.get(genome.getSpecies()).size());
 
         if (genome.getFitness() > bestFitness[genome.getSpecies()]) {
           bestFitness[genome.getSpecies()] = genome.getFitness();

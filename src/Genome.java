@@ -41,7 +41,12 @@ class Genome {
     initialiseGenome();
   }
 
-  public Genome(int inputCount, int outputCount, List<Connection> connections, Genome parent, Population population) {
+  public Genome(
+      int inputCount,
+      int outputCount,
+      List<Connection> connections,
+      Genome parent,
+      Population population) {
     this.INPUT_COUNT = inputCount;
     this.OUTPUT_COUNT = outputCount;
     this.state = parent.getState().reset().deepCopy();
@@ -146,7 +151,7 @@ class Genome {
     maxGeneCount = maxGeneCount < 20 ? 1 : maxGeneCount;
 
     return (EXCESS_COEFFICIENT * excessConns + DISJOINT_COEFFICIENT * disjointConns)
-           / (maxGeneCount + WEIGHT_DIFF_COEFFICIENT * avgWeightDiff);
+        / (maxGeneCount + WEIGHT_DIFF_COEFFICIENT * avgWeightDiff);
   }
 
   public int numberOfExcessConnections(Genome genome, Map<ConnectionGene, Integer> innovations) {

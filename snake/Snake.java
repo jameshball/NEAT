@@ -4,57 +4,95 @@ import java.util.Random;
 
 /* Snake holds all the information about the Snake, including its current position, location of all parts
 of its tail and whether it is still alive. */
-class Snake {
-  Vector2D pos;
-  List<Vector2D> body;
-  Vector2D direction;
-  boolean dead;
-  Random rng = new Random();
+public class Snake {
 
-  Snake() {
+  /* By default, the snake moves right */
+  private static final Vector2 DEFAULT_DIRECTION = new Vector2(1, 0);
+
+  private final List<Vector2> body;
+
+  private Vector2 pos;
+  private Vector2 direction;
+  private boolean dead;
+  private final Random rng;
+
+  public Snake() {
+    this.rng = new Random();
     /* This resets the snake's head to a random position at least 1 square away from the edges. */
-    pos = new Vector2D(rng.nextInt(NEATClient.gridX - 1) + 1, rng.nextInt(NEATClient.gridY - 1) + 1);
-    dead = false;
-    body = new ArrayList<>();
-    body.add(new Vector2D(pos.x, pos.y));
-    /* The default direction moves right */
-    direction = new Vector2D(1, 0);
+    this.pos = new Vector2(rng.nextInt(SnakeAI.gridX - 1) + 1, rng.nextInt(SnakeAI.gridY - 1) + 1);
+    this.dead = false;
+    this.body = new ArrayList<>();
+    this.body.add(new Vector2(pos.x, pos.y));
+    this.direction = DEFAULT_DIRECTION;
+  }
+
+  public int length() {
+    return body.size();
   }
 
   /* This method is executed every frame. 'direction' is updated externally and corresponds to the next
   direction the snake will move in. 'direction' is added to the location of the snake's head.
   It also checks if the snake has hit its tail or gone out of the bounds of the grid. */
-  void update() {
+  public void update() {
     pos.add(direction);
 
-    if (isTail(pos) || pos.x < 0 || pos.x >= NEATClient.gridX || pos.y < 0 || pos.y >= NEATClient.gridY) {
+    if (isTail(pos) || pos.x < 0 || pos.x >= SnakeAI.gridX || pos.y < 0 || pos.y >= SnakeAI.gridY) {
       dead = true;
     }
   }
 
   /* This method moves the snake by removing the last element in their tail and adding the location of the
   snake's head. */
-  void move() {
+  public void move() {
     body.remove(0);
-    body.add(new Vector2D(pos.x, pos.y));
+    body.add(new Vector2(pos.x, pos.y));
   }
 
   /* This method extends the snake's body by adding the new position of the snake's head, without removing
   the end of its tail. */
-  void extend() {
-    body.add(new Vector2D(pos.x, pos.y));
-  }
 
+  public void extend() {
+    body.add(new Vector2(pos.x, pos.y));
+  }
   /* Compares each part of the snake's tail with the new head position. If they are equal, the snake has
   hit its tail. */
-  boolean isTail(Vector2D vector) {
+
+  private boolean isTail(Vector2 vector) {
     for (int i = 0; i < body.size() - 1; i++) {
-      Vector2D part = body.get(i);
+      Vector2 part = body.get(i);
       if (part.x == vector.x && part.y == vector.y) {
         return true;
       }
     }
 
     return false;
+  }
+  /* Updates the snake's direction so it now points in the new direction. */
+
+  public void point(Vector2 dir) {
+    direction = dir;
+  }
+  public void kill() {
+    dead = true;
+  }
+
+  public boolean isDead() {
+    return dead;
+  }
+
+  public float getX() {
+    return pos.x;
+  }
+
+  public float getY() {
+    return pos.y;
+  }
+
+  public Vector2 tail() {
+    return body.get(0);
+  }
+
+  public Vector2 head() {
+    return pos;
   }
 }

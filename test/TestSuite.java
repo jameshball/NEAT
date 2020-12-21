@@ -97,7 +97,7 @@ public class TestSuite {
 
     population = new Population(0, INPUT_COUNT, OUTPUT_COUNT, new BlankState());
     // Seed of 503 results in a connection and node being 'randomly' added.
-    genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, blankState, new Random (503), population);
+    genome = new Genome(INPUT_COUNT, OUTPUT_COUNT, blankState, new Random(503), population);
     genome.mutateAddNode();
     genome.mutateAddConnection();
 
@@ -108,8 +108,8 @@ public class TestSuite {
 
     assertNotEquals(NodeType.OUTPUT, genome.getNode(in));
     assertNotEquals(NodeType.INPUT, genome.getNode(out));
-    assertTrue(genome.getNode(in).equals(NodeType.HIDDEN)
-            || genome.getNode(out).equals(NodeType.HIDDEN));
+    assertTrue(
+        genome.getNode(in).equals(NodeType.HIDDEN) || genome.getNode(out).equals(NodeType.HIDDEN));
   }
 
   @Test

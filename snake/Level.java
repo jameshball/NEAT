@@ -5,27 +5,29 @@ import java.util.Random;
 
 /* The Level class holds all details about the current state of the game, including the Snake,
 Apple and score. It has the functionality to update the grid each frame. */
-class Level implements State {
-  private GridState[][] grid;
-  private Snake snake;
-  private Vector2D apple;
-  int score;
-  private int movesSinceLastApple = 0;
-  Random rng = new Random();
+public class Level implements State {
 
-  Level() {
+  private final Snake snake;
+  private final Random rng;
+
+  private GridState[][] grid;
+  private Vector2 apple;
+  private int score;
+  private int movesSinceLastApple = 0;
+
+  public Level() {
     snake = new Snake();
+    rng = new Random();
     resetGrid();
     resetApple();
-    rng = new Random();
   }
 
   /* Resets the grid to all EMPTY squares. */
   private void resetGrid() {
-    grid = new GridState[NEATClient.gridX][NEATClient.gridY];
+    grid = new GridState[SnakeAI.gridX][SnakeAI.gridY];
 
-    for (int i = 0; i < NEATClient.gridX; i++) {
-      for (int j = 0; j < NEATClient.gridY; j++) {
+    for (int i = 0; i < SnakeAI.gridX; i++) {
+      for (int j = 0; j < SnakeAI.gridY; j++) {
         grid[i][j] = GridState.EMPTY;
       }
     }
@@ -33,17 +35,17 @@ class Level implements State {
 
   /* Generates a new apple position, which is a random location that is not taken up by the snake. */
   private void resetApple() {
-    int emptyGridSpaces = NEATClient.gridX * NEATClient.gridY - snake.body.size();
+    int emptyGridSpaces = SnakeAI.gridX * SnakeAI.gridY - snake.length();
     int randomFreeSpace = rng.nextInt(emptyGridSpaces);
     int emptySpaceCount = 0;
 
-    for (int i = 0; i < NEATClient.gridX; i++) {
-      for (int j = 0; j < NEATClient.gridY; j++) {
+    for (int i = 0; i < SnakeAI.gridX; i++) {
+      for (int j = 0; j < SnakeAI.gridY; j++) {
         if (grid[i][j] == GridState.EMPTY) {
           emptySpaceCount++;
 
           if (emptySpaceCount >= randomFreeSpace) {
-            apple = new Vector2D(i, j);
+            apple = new Vector2(i, j);
             set(apple, GridState.APPLE);
             return;
           }
@@ -66,25 +68,25 @@ class Level implements State {
         }
       }
 
-      Vector2D dir = new Vector2D(0, 0);
+      Vector2 dir = new Vector2(0, 0);
 
       switch (maxIndex) {
         case 0:
-          dir = new Vector2D(0, 1);
+          dir = new Vector2(0, 1);
           break;
         case 1:
-          dir = new Vector2D(1, 0);
+          dir = new Vector2(1, 0);
           break;
         case 2:
-          dir = new Vector2D(0, -1);
+          dir = new Vector2(0, -1);
           break;
         case 3:
-          dir = new Vector2D(-1, 0);
+          dir = new Vector2(-1, 0);
           break;
       }
 
       /* Changes the direction of the snake to the newly decided direction. */
-      snake.direction = dir;
+      snake.point(dir);
 
       updateLevel();
     }
@@ -97,22 +99,22 @@ class Level implements State {
     snake.update();
 
     /* If the snake has run out of moves for this apple... */
-    if (movesSinceLastApple > NEATClient.allowedMoves[snake.body.size()]) {
-      snake.dead = true;
+    if (movesSinceLastApple > SnakeAI.allowedMoves[snake.length()]) {
+      snake.kill();
     }
 
-    if (!snake.dead) {
+    if (!snake.isDead()) {
       /* If the snake eats an apple... */
-      if (snake.pos.x == apple.x && snake.pos.y == apple.y) {
+      if (snake.getX() == apple.x && snake.getY() == apple.y) {
         /* Increase the score and size of the snake, generate a new apple and change the
         nextAppleMoves value. */
         snake.extend();
         resetApple();
         score++;
         movesSinceLastApple = 0;
-        updateGrid(true, new Vector2D(0, 0));
+        updateGrid(true, new Vector2(0, 0));
       } else {
-        Vector2D tail = snake.body.get(0);
+        Vector2 tail = snake.tail();
         updateGrid(false, tail);
         snake.move();
       }
@@ -122,39 +124,39 @@ class Level implements State {
   }
 
   /* Updates the snake's position in the grid. */
-  private void updateGrid(boolean appleEaten, Vector2D tailPos) {
+  private void updateGrid(boolean appleEaten, Vector2 tailPos) {
     if (!appleEaten) {
       set(tailPos, GridState.EMPTY);
     }
 
-    set(snake.pos, GridState.SNAKE);
+    set(snake.head(), GridState.SNAKE);
   }
 
   /* Sets the element stored at 'pos' in the grid array to the value 'objectType'. */
-  private void set(Vector2D pos, GridState objectType) {
+  private void set(Vector2 pos, GridState objectType) {
     grid[(int) pos.x][(int) pos.y] = objectType;
   }
 
   /* Returns a list of three numbers. They represent the distance to the snake's body, the apple
   and the walls of the grid. */
-  private List<Float> snakeLook(Vector2D direction) {
+  private List<Float> snakeLook(Vector2 direction) {
     /* I need to create a deep copy of snake.pos because I will be modifying it in this method. */
-    Vector2D snakePos = new Vector2D(snake.pos.x, snake.pos.y);
+    Vector2 head = snake.head().copy();
     Float[] vision = new Float[3];
     int distance = 1;
 
     Arrays.fill(vision, 0.0f);
 
-    /* Move snakePos in the direction of the dir vector specified and continue if it is still
+    /* Move head in the direction of the dir vector specified and continue if it is still
     within the bounds of the grid. */
-    while (withinBounds(snakePos.add(direction))) {
-      /* If snakePos comes in contact with the snake's body and vision[0] is unassigned... */
-      if (grid[(int) snakePos.x][(int) snakePos.y] == GridState.SNAKE && vision[0] == 0) {
+    while (withinBounds(head.add(direction))) {
+      /* If head comes in contact with the snake's body and vision[0] is unassigned... */
+      if (grid[(int) head.x][(int) head.y] == GridState.SNAKE && vision[0] == 0) {
         vision[0] = 1.0f / distance;
       }
 
-      /* If snakePos comes in contact with an apple and vision[1] is unassigned... */
-      if (grid[(int) snakePos.x][(int) snakePos.y] == GridState.APPLE && vision[1] == 0) {
+      /* If head comes in contact with an apple and vision[1] is unassigned... */
+      if (grid[(int) head.x][(int) head.y] == GridState.APPLE && vision[1] == 0) {
         vision[1] = 1.0f;
       }
 
@@ -173,7 +175,7 @@ class Level implements State {
   public float[] getGenomeInputs() {
     ArrayList<Float> vision = new ArrayList<>();
 
-    for (Vector2D direction : NEATClient.directions) {
+    for (Vector2 direction : SnakeAI.directions) {
       vision.addAll(snakeLook(direction));
     }
 
@@ -188,8 +190,8 @@ class Level implements State {
   }
 
   /* Returns true if the input vector is within the bounds of the grid. */
-  private boolean withinBounds(Vector2D loc) {
-    return !(loc.x > NEATClient.gridX - 1 || loc.x < 0 || loc.y > NEATClient.gridY - 1 || loc.y < 0);
+  private boolean withinBounds(Vector2 loc) {
+    return !(loc.x > SnakeAI.gridX - 1 || loc.x < 0 || loc.y > SnakeAI.gridY - 1 || loc.y < 0);
   }
 
   @Override
@@ -199,7 +201,7 @@ class Level implements State {
 
   @Override
   public boolean hasEnded() {
-    return snake.dead;
+    return snake.isDead();
   }
 
   @Override

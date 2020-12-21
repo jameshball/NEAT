@@ -6,9 +6,7 @@ public class BlankState implements State {
   }
 
   @Override
-  public void update(float[] inputs) {
-
-  }
+  public void update(float[] inputs) {}
 
   @Override
   public float[] getGenomeInputs() {

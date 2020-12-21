@@ -1,21 +1,19 @@
-import java.util.Random;
-
-class NEATClient {
+class SnakeAI {
   static int populationSize = 500;
   static int gridX = 40;
   static int gridY = 40;
   static int[] allowedMoves = new int[gridX * gridY + 1];
-  static Vector2D[] directions =
-    new Vector2D[] {
-      new Vector2D(0, 1),
-      new Vector2D(1, 1),
-      new Vector2D(1, 0),
-      new Vector2D(1, -1),
-      new Vector2D(0, -1),
-      new Vector2D(-1, -1),
-      new Vector2D(-1, 0),
-      new Vector2D(-1, 1)
-    };
+  static Vector2[] directions =
+      new Vector2[] {
+        new Vector2(0, 1),
+        new Vector2(1, 1),
+        new Vector2(1, 0),
+        new Vector2(1, -1),
+        new Vector2(0, -1),
+        new Vector2(-1, -1),
+        new Vector2(-1, 0),
+        new Vector2(-1, 1)
+      };
 
   public static void main(String[] args) {
     for (int i = 0; i < allowedMoves.length; i++) {
