@@ -7,19 +7,20 @@ of its tail and whether it is still alive. */
 public class Snake {
 
   /* By default, the snake moves right */
-  private static final Vector2 DEFAULT_DIRECTION = new Vector2(1, 0);
+  private static final Vector2 DEFAULT_DIRECTION = Vector2.WEST;
 
+  private final Level level;
   private final List<Vector2> body;
+  private final Vector2 head;
 
-  private Vector2 head;
   private Vector2 direction;
   private boolean dead;
-  private final Random rng;
 
-  public Snake() {
-    this.rng = new Random();
+  public Snake(Level level) {
+    Random rng = new Random();
+    this.level = level;
     /* This resets the snake's head to a random position at least 1 square away from the edges. */
-    this.head = new Vector2(rng.nextInt(SnakeAI.gridX - 1) + 1, rng.nextInt(SnakeAI.gridY - 1) + 1);
+    this.head = new Vector2(rng.nextInt(level.width() - 1) + 1, rng.nextInt(level.height() - 1) + 1);
     this.dead = false;
     this.body = new ArrayList<>();
     this.body.add(new Vector2(head.x, head.y));
@@ -36,7 +37,7 @@ public class Snake {
   public void update() {
     head.add(direction);
 
-    if (isTail(head) || !Level.withinBounds(head)) {
+    if (isTail(head) || !level.withinBounds(head)) {
       dead = true;
     }
   }
@@ -45,14 +46,14 @@ public class Snake {
   snake's head. */
   public void move() {
     body.remove(0);
-    body.add(new Vector2(head.x, head.y));
+    body.add(head.copy());
   }
 
   /* This method extends the snake's body by adding the new position of the snake's head, without removing
   the end of its tail. */
 
   public void extend() {
-    body.add(new Vector2(head.x, head.y));
+    body.add(head.copy());
   }
   /* Compares each part of the snake's tail with the new head position. If they are equal, the snake has
   hit its tail. */
@@ -60,7 +61,7 @@ public class Snake {
   private boolean isTail(Vector2 vector) {
     for (int i = 0; i < body.size() - 1; i++) {
       Vector2 part = body.get(i);
-      if (part.x == vector.x && part.y == vector.y) {
+      if (vector.equals(part)) {
         return true;
       }
     }
@@ -78,14 +79,6 @@ public class Snake {
 
   public boolean isDead() {
     return dead;
-  }
-
-  public float getX() {
-    return head.x;
-  }
-
-  public float getY() {
-    return head.y;
   }
 
   public Vector2 tail() {

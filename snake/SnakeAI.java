@@ -1,16 +1,14 @@
 class SnakeAI {
-  static int populationSize = 500;
-  static int gridX = 40;
-  static int gridY = 40;
-  static int[] allowedMoves = new int[gridX * gridY + 1];
 
+  private static final int GRID_WIDTH = 40;
+  private static final int GRID_HEIGHT = 40;
+
+  private static final int POPULATION_SIZE = 500;
+  private static final int NUM_INPUTS = 24;
+  private static final int NUM_OUTPUTS = 4;
 
   public static void main(String[] args) {
-    for (int i = 0; i < allowedMoves.length; i++) {
-      allowedMoves[i] = (int) (200 * (Math.log(i) / Math.log(3)) + 300);
-    }
-
-    Population pop = new Population(populationSize, 24, 4, new Level());
+    Population pop = new Population(POPULATION_SIZE, NUM_INPUTS, NUM_OUTPUTS, new Level(GRID_WIDTH, GRID_HEIGHT));
 
     while (true) {
       pop.update();

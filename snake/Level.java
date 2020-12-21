@@ -24,24 +24,35 @@ public class Level implements State {
   private final Snake snake;
   private final Random rng;
 
+  private final int width;
+  private final int height;
+  private final int[] allowedMoves;
+
   private GridState[][] grid;
   private Vector2 apple;
   private int score;
   private int movesSinceLastApple = 0;
 
-  public Level() {
-    this.snake = new Snake();
+  public Level(int width, int height) {
     this.rng = new Random();
+    this.width = width;
+    this.height = height;
+    this.allowedMoves = new int[width * height + 1];
+
+    for (int i = 0; i < allowedMoves.length; i++) {
+      allowedMoves[i] = (int) (200 * (Math.log(i) / Math.log(3)) + 300);
+    }
     resetGrid();
+    this.snake = new Snake(this);
     resetApple();
   }
 
   /* Resets the grid to all EMPTY squares. */
   private void resetGrid() {
-    grid = new GridState[SnakeAI.gridX][SnakeAI.gridY];
+    grid = new GridState[width][height];
 
-    for (int i = 0; i < SnakeAI.gridX; i++) {
-      for (int j = 0; j < SnakeAI.gridY; j++) {
+    for (int i = 0; i < width; i++) {
+      for (int j = 0; j < height; j++) {
         grid[i][j] = GridState.EMPTY;
       }
     }
@@ -49,14 +60,14 @@ public class Level implements State {
 
   /* Generates a new apple position, which is a random location that is not taken up by the snake. */
   private void resetApple() {
-    int numEmptySpaces = SnakeAI.gridX * SnakeAI.gridY - snake.length();
+    int numEmptySpaces = width * height - snake.length();
     int randomFreeSpace = rng.nextInt(numEmptySpaces);
     int emptySpaceCount = 0;
 
     /* Loops through the grid and finds the randomFreeSpace within the grid that was randomly chosen
      * according to the numEmptySpaces. */
-    for (int i = 0; i < SnakeAI.gridX; i++) {
-      for (int j = 0; j < SnakeAI.gridY; j++) {
+    for (int i = 0; i < width; i++) {
+      for (int j = 0; j < height; j++) {
         if (grid[i][j] == GridState.EMPTY) {
           emptySpaceCount++;
 
@@ -99,7 +110,7 @@ public class Level implements State {
     snake.update();
 
     /* If the snake has run out of moves for this apple... */
-    if (movesSinceLastApple > SnakeAI.allowedMoves[snake.length()]) {
+    if (movesSinceLastApple > allowedMoves[snake.length()]) {
       snake.kill();
     }
 
@@ -190,8 +201,8 @@ public class Level implements State {
   }
 
   /* Returns true if the input vector is within the bounds of the grid. */
-  public static boolean withinBounds(Vector2 pos) {
-    return pos.x <= SnakeAI.gridX - 1 && pos.x >= 0 && pos.y <= SnakeAI.gridY - 1 && pos.y >= 0;
+  public boolean withinBounds(Vector2 pos) {
+    return pos.x <= width - 1 && pos.x >= 0 && pos.y <= height - 1 && pos.y >= 0;
   }
 
   @Override
@@ -206,12 +217,20 @@ public class Level implements State {
 
   @Override
   public State reset() {
-    return new Level();
+    return new Level(width, height);
   }
 
   @Override
   public State deepCopy() {
     return this;
+  }
+
+  public int width() {
+    return width;
+  }
+
+  public int height() {
+    return height;
   }
 
   private enum GridState {
