@@ -1,5 +1,6 @@
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Predicate;
 
 class Population {
   private Genome[] genomes;
@@ -35,7 +36,9 @@ class Population {
   // TODO: Ensure this class is idiomatic and efficient.
 
   public void update() {
-    Arrays.stream(genomes).parallel().forEach(Genome::updateState);
+    Arrays.stream(genomes).parallel()
+      .filter(Predicate.not(Genome::hasEnded))
+      .forEach(Genome::updateState);
 
     if (allEnded()) {
       System.out.printf(

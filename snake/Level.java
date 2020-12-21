@@ -7,6 +7,20 @@ import java.util.Random;
 Apple and score. It has the functionality to update the grid each frame. */
 public class Level implements State {
 
+  /* Links indexes of the input array in update() to vector directions. */
+  private static final List<Vector2> DIRECTIONS = List.of(Vector2.NORTH, Vector2.EAST, Vector2.SOUTH, Vector2.WEST);
+  /* Directions the snake should look in when retrieving inputs. */
+  private static final List<Vector2> LOOKING_DIRECTIONS = List.of(
+    Vector2.NORTH,
+    Vector2.NORTHEAST,
+    Vector2.EAST,
+    Vector2.SOUTHEAST,
+    Vector2.SOUTH,
+    Vector2.SOUTHWEST,
+    Vector2.WEST,
+    Vector2.NORTHWEST
+  );
+
   private final Snake snake;
   private final Random rng;
 
@@ -16,8 +30,8 @@ public class Level implements State {
   private int movesSinceLastApple = 0;
 
   public Level() {
-    snake = new Snake();
-    rng = new Random();
+    this.snake = new Snake();
+    this.rng = new Random();
     resetGrid();
     resetApple();
   }
@@ -35,10 +49,12 @@ public class Level implements State {
 
   /* Generates a new apple position, which is a random location that is not taken up by the snake. */
   private void resetApple() {
-    int emptyGridSpaces = SnakeAI.gridX * SnakeAI.gridY - snake.length();
-    int randomFreeSpace = rng.nextInt(emptyGridSpaces);
+    int numEmptySpaces = SnakeAI.gridX * SnakeAI.gridY - snake.length();
+    int randomFreeSpace = rng.nextInt(numEmptySpaces);
     int emptySpaceCount = 0;
 
+    /* Loops through the grid and finds the randomFreeSpace within the grid that was randomly chosen
+     * according to the numEmptySpaces. */
     for (int i = 0; i < SnakeAI.gridX; i++) {
       for (int j = 0; j < SnakeAI.gridY; j++) {
         if (grid[i][j] == GridState.EMPTY) {
@@ -52,50 +68,34 @@ public class Level implements State {
         }
       }
     }
+
+    /* Unreachable */
+    throw new RuntimeException("Apple location should have been chosen!");
   }
 
   @Override
   public void update(float[] input) {
-    if (!hasEnded()) {
-      /* This code looks at the strongest output from the NN to decide what move to make. */
-      float max = input[0];
-      int maxIndex = 0;
+    /* This code looks at the strongest output from the NN to decide what move to make. */
+    float max = input[0];
+    int maxIndex = 0;
 
-      for (int i = 1; i < input.length; i++) {
-        if (input[i] > max) {
-          max = input[i];
-          maxIndex = i;
-        }
+    for (int i = 1; i < input.length; i++) {
+      if (input[i] > max) {
+        max = input[i];
+        maxIndex = i;
       }
-
-      Vector2 dir = new Vector2(0, 0);
-
-      switch (maxIndex) {
-        case 0:
-          dir = new Vector2(0, 1);
-          break;
-        case 1:
-          dir = new Vector2(1, 0);
-          break;
-        case 2:
-          dir = new Vector2(0, -1);
-          break;
-        case 3:
-          dir = new Vector2(-1, 0);
-          break;
-      }
-
-      /* Changes the direction of the snake to the newly decided direction. */
-      snake.point(dir);
-
-      updateLevel();
     }
+
+    Vector2 dir = DIRECTIONS.get(maxIndex);
+    /* Changes the direction of the snake to the newly decided direction. */
+    snake.point(dir);
+    updateLevel();
   }
 
   /* The update method moves the head of the snake and checks if it has died. If the snake has eaten
   an apple, it will grow, otherwise it will move to the new position. This only executes if the
   snake is alive. */
-  void updateLevel() {
+  private void updateLevel() {
     snake.update();
 
     /* If the snake has run out of moves for this apple... */
@@ -105,7 +105,7 @@ public class Level implements State {
 
     if (!snake.isDead()) {
       /* If the snake eats an apple... */
-      if (snake.getX() == apple.x && snake.getY() == apple.y) {
+      if (snake.head().equals(apple)) {
         /* Increase the score and size of the snake, generate a new apple and change the
         nextAppleMoves value. */
         snake.extend();
@@ -175,7 +175,7 @@ public class Level implements State {
   public float[] getGenomeInputs() {
     ArrayList<Float> vision = new ArrayList<>();
 
-    for (Vector2 direction : SnakeAI.directions) {
+    for (Vector2 direction : LOOKING_DIRECTIONS) {
       vision.addAll(snakeLook(direction));
     }
 
@@ -190,8 +190,8 @@ public class Level implements State {
   }
 
   /* Returns true if the input vector is within the bounds of the grid. */
-  private boolean withinBounds(Vector2 loc) {
-    return !(loc.x > SnakeAI.gridX - 1 || loc.x < 0 || loc.y > SnakeAI.gridY - 1 || loc.y < 0);
+  public static boolean withinBounds(Vector2 pos) {
+    return pos.x <= SnakeAI.gridX - 1 && pos.x >= 0 && pos.y <= SnakeAI.gridY - 1 && pos.y >= 0;
   }
 
   @Override
@@ -212,5 +212,11 @@ public class Level implements State {
   @Override
   public State deepCopy() {
     return this;
+  }
+
+  private enum GridState {
+    SNAKE,
+    EMPTY,
+    APPLE
   }
 }

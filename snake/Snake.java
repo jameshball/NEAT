@@ -11,7 +11,7 @@ public class Snake {
 
   private final List<Vector2> body;
 
-  private Vector2 pos;
+  private Vector2 head;
   private Vector2 direction;
   private boolean dead;
   private final Random rng;
@@ -19,10 +19,10 @@ public class Snake {
   public Snake() {
     this.rng = new Random();
     /* This resets the snake's head to a random position at least 1 square away from the edges. */
-    this.pos = new Vector2(rng.nextInt(SnakeAI.gridX - 1) + 1, rng.nextInt(SnakeAI.gridY - 1) + 1);
+    this.head = new Vector2(rng.nextInt(SnakeAI.gridX - 1) + 1, rng.nextInt(SnakeAI.gridY - 1) + 1);
     this.dead = false;
     this.body = new ArrayList<>();
-    this.body.add(new Vector2(pos.x, pos.y));
+    this.body.add(new Vector2(head.x, head.y));
     this.direction = DEFAULT_DIRECTION;
   }
 
@@ -34,9 +34,9 @@ public class Snake {
   direction the snake will move in. 'direction' is added to the location of the snake's head.
   It also checks if the snake has hit its tail or gone out of the bounds of the grid. */
   public void update() {
-    pos.add(direction);
+    head.add(direction);
 
-    if (isTail(pos) || pos.x < 0 || pos.x >= SnakeAI.gridX || pos.y < 0 || pos.y >= SnakeAI.gridY) {
+    if (isTail(head) || !Level.withinBounds(head)) {
       dead = true;
     }
   }
@@ -45,14 +45,14 @@ public class Snake {
   snake's head. */
   public void move() {
     body.remove(0);
-    body.add(new Vector2(pos.x, pos.y));
+    body.add(new Vector2(head.x, head.y));
   }
 
   /* This method extends the snake's body by adding the new position of the snake's head, without removing
   the end of its tail. */
 
   public void extend() {
-    body.add(new Vector2(pos.x, pos.y));
+    body.add(new Vector2(head.x, head.y));
   }
   /* Compares each part of the snake's tail with the new head position. If they are equal, the snake has
   hit its tail. */
@@ -81,11 +81,11 @@ public class Snake {
   }
 
   public float getX() {
-    return pos.x;
+    return head.x;
   }
 
   public float getY() {
-    return pos.y;
+    return head.y;
   }
 
   public Vector2 tail() {
@@ -93,6 +93,6 @@ public class Snake {
   }
 
   public Vector2 head() {
-    return pos;
+    return head;
   }
 }
