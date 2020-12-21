@@ -1,6 +1,7 @@
 import java.util.Objects;
 
 class ConnectionGene {
+
   private final int in;
   private final int out;
 

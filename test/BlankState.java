@@ -27,4 +27,9 @@ public class BlankState implements State {
   public State deepCopy() {
     return this;
   }
+
+  @Override
+  public float activate(float x) {
+    return 0;
+  }
 }

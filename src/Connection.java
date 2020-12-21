@@ -1,5 +1,7 @@
 public class Connection {
-  private ConnectionGene gene;
+
+  private final ConnectionGene gene;
+
   private float weight;
   private boolean enabled;
 

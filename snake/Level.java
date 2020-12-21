@@ -123,7 +123,7 @@ public class Level implements State {
         resetApple();
         score++;
         movesSinceLastApple = 0;
-        updateGrid(true, new Vector2(0, 0));
+        updateGrid(true, new Vector2());
       } else {
         Vector2 tail = snake.tail();
         updateGrid(false, tail);
@@ -223,6 +223,11 @@ public class Level implements State {
   @Override
   public State deepCopy() {
     return this;
+  }
+
+  @Override
+  public float activate(float x) {
+    return State.sigmoid(x);
   }
 
   public int width() {

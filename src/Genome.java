@@ -4,13 +4,6 @@ import java.util.Map;
 import java.util.Random;
 
 class Genome {
-  private State state;
-  private List<NodeType> nodes;
-  private List<Connection> connections;
-  private Random rng;
-  private int species;
-  private float fitness;
-  private Population population;
 
   private static final int DEFAULT_SPECIES = 0;
   private static final float EXCESS_COEFFICIENT = 1.0f;
@@ -20,9 +13,17 @@ class Genome {
   private static final float UNIFORM_PERTURBATION_RATE = 1f;
   private static final float ADD_NEW_NODE_RATE = 0.03f;
   private static final float ADD_NEW_CONNECTION_RATE = 0.05f;
-  private static final float SIGMOID_CONSTANT = 4.9f;
   // Decreasing this may dramatically affect performance.
   private static final float ACTIVATION_STABILISATION_THRESHOLD = 0.02f;
+
+  private final State state;
+  private final List<NodeType> nodes;
+  private final List<Connection> connections;
+  private final Random rng;
+  private final Population population;
+
+  private int species;
+  private float fitness;
 
   public final int INPUT_COUNT;
   public final int OUTPUT_COUNT;
@@ -93,7 +94,7 @@ class Genome {
           }
         }
 
-        nodeValues[i] = sigmoid(nodeValues[i]);
+        nodeValues[i] = state.activate(nodeValues[i]);
       }
     } while (!isStabilised(nodeValues, prevNodeValues));
 
@@ -104,11 +105,6 @@ class Genome {
     }
 
     return outputs;
-  }
-
-  // TODO: Implement activation function in State, so it can be user defined.
-  private static float sigmoid(float x) {
-    return (float) (1 / (1 + Math.exp(-SIGMOID_CONSTANT * x)));
   }
 
   private boolean isStabilised(float[] nodeValues, float[] prevNodeValues) {
@@ -173,17 +169,10 @@ class Genome {
   }
 
   private int maxInnovationNumber(Map<ConnectionGene, Integer> innovations) {
-    int max = Integer.MIN_VALUE;
-
-    for (Connection connection : connections) {
-      int innovationNumber = innovations.get(connection.getGene());
-
-      if (innovationNumber > max) {
-        max = innovationNumber;
-      }
-    }
-
-    return max;
+    return connections.stream()
+        .map(connection -> innovations.get(connection.getGene()))
+        .max(Integer::compareTo)
+        .orElse(Integer.MIN_VALUE);
   }
 
   public float evaluateFitness() {
@@ -317,13 +306,10 @@ class Genome {
   }
 
   public Connection getConnection(ConnectionGene gene) {
-    for (Connection connection : connections) {
-      if (connection.getGene().equals(gene)) {
-        return connection;
-      }
-    }
-
-    return null;
+    return connections.stream()
+        .filter(connection -> connection.getGene().equals(gene))
+        .findFirst()
+        .orElse(null);
   }
 
   public List<Connection> getConnections() {

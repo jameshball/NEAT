@@ -6,8 +6,8 @@ import java.util.Random;
 import static org.junit.Assert.*;
 
 public class TestSuite {
-  private static Random rng = new Random();
-  private static BlankState blankState = new BlankState();
+  private static final Random rng = new Random();
+  private static final BlankState blankState = new BlankState();
 
   // Arbitrary input and output counts for testing.
   private static final int INPUT_COUNT = 10;
@@ -50,7 +50,7 @@ public class TestSuite {
 
     Genome genome = new Genome(inputCount, outputCount, blankState, population);
 
-    assertEquals(population.innovationsSize(), inputCount * outputCount);
+    assertEquals(inputCount * outputCount, population.innovationsSize());
 
     ConnectionGene dummyGene = new ConnectionGene(Integer.MAX_VALUE, 0);
 

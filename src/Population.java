@@ -3,19 +3,20 @@ import java.util.*;
 import java.util.function.Predicate;
 
 class Population {
-  private Genome[] genomes;
-  private Map<ConnectionGene, Integer> innovations;
-  private List<Species> species;
-  private Random rng;
-
-  public static int GENERATION_NUMBER;
-
-  private final int POPULATION_COUNT;
 
   private static final float INHERITED_GENE_DISABLED_RATE = 0.75f;
   private static final float CROSSOVER_RATE = 0.75f;
   private static final float INTERSPECIES_MATING_RATE = 0.001f;
   private static final float COMPATIBILITY_DISTANCE_THRESHOLD = 3.0f;
+
+  public int GENERATION_NUMBER;
+
+  private final Map<ConnectionGene, Integer> innovations;
+  private final List<Species> species;
+  private final Random rng;
+  private final int POPULATION_COUNT;
+
+  private Genome[] genomes;
 
   public Population(int populationCount, int inputCount, int outputCount, State state) {
     this.GENERATION_NUMBER = 0;
@@ -36,9 +37,10 @@ class Population {
   // TODO: Ensure this class is idiomatic and efficient.
 
   public void update() {
-    Arrays.stream(genomes).parallel()
-      .filter(Predicate.not(Genome::hasEnded))
-      .forEach(Genome::updateState);
+    Arrays.stream(genomes)
+        .parallel()
+        .filter(Predicate.not(Genome::hasEnded))
+        .forEach(Genome::updateState);
 
     if (allEnded()) {
       System.out.printf(
@@ -86,7 +88,6 @@ class Population {
   // This never explicitly chooses a parent from another species, there is just
   // a chance that a parent is selected from the whole population, instead of
   // one species.
-  // TODO: Make more efficient (repeated calls to fitnessSum()).
   private Genome getParent(Genome genome) {
     boolean interspeciesMating = rng.nextFloat() < INTERSPECIES_MATING_RATE;
 
@@ -130,25 +131,15 @@ class Population {
   }
 
   public float fitnessSum() {
-    float total = 0;
-
-    for (Genome genome : genomes) {
-      total += genome.getFitness();
-    }
-
-    return total;
+    return Arrays.stream(genomes).map(Genome::getFitness).reduce(Float::sum).orElse(0.0f);
   }
 
   public float fitnessSum(int species) {
-    float total = 0;
-
-    for (Genome genome : genomes) {
-      if (genome.getSpecies() == species) {
-        total += genome.getFitness();
-      }
-    }
-
-    return total;
+    return Arrays.stream(genomes)
+        .filter(genome -> genome.getSpecies() == species)
+        .map(Genome::getFitness)
+        .reduce(Float::sum)
+        .orElse(0.0f);
   }
 
   private Genome crossover(Genome parent1, Genome parent2) {
@@ -205,7 +196,6 @@ class Population {
 
   private void placeInSpecies(Genome genome) {
     Set<Integer> seenSpecies = new HashSet<>();
-
     int maxSpecies = 0;
 
     for (Genome rep : genomes) {
